@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Duniamu — Selesaikan Misi, Hasilkan</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<div class="bg-glow"></div>
+
+<header class="navbar">
+  <div class="brand">
+    <div class="logo-circle">D</div>
+    <div>
+      <div class="brand-name">Duniamu</div>
+      <div class="brand-tag">Selesaikan Misi, Hasilkan 💸</div>
+    </div>
+  </div>
+</header>
+
+<main class="hero">
+  <h1>Selesaikan Misi, <span class="gradient">Hasilkan 💸</span></h1>
+  <p class="subtitle">Kerjakan semua misi di bawah, lalu klaim hadiahmu!</p>
+
+  <div class="stats">
+    <div class="stat-card"><div class="stat-value" id="totalMissions">0</div><div class="stat-label">Total Misi</div></div>
+    <div class="stat-card"><div class="stat-value" id="doneMissions">0</div><div class="stat-label">Selesai</div></div>
+    <div class="stat-card"><div class="stat-value" id="totalReward">0</div><div class="stat-label">Poin</div></div>
+  </div>
+
+  <section class="missions" id="missionList"></section>
+
+  <div class="claim-box" id="claimBox" style="display:none">
+    <h2>🎉 Selamat! Semua misi selesai</h2>
+    <p>Total reward: <strong id="finalReward">0</strong> poin</p>
+    <button class="btn-claim" onclick="resetMissions()">🔄 Ulangi dari Awal</button>
+  </div>
+
+  <p class="footer">© 2025 Duniamu · Dibuat dengan ❤️</p>
+</main>
+
+<div class="toast" id="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>
