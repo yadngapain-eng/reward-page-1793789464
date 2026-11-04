@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow"/>
+<title>Admin · Duniamu</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}
+body{background:#0a0e1a;color:#e5eefc;min-height:100vh;padding:20px}
+.login{max-width:380px;margin:100px auto;background:#121a2b;border:1px solid #1f2a44;border-radius:16px;padding:32px;display:flex;flex-direction:column;gap:14px}
+h1{font-size:22px;color:#00e0ff}
+input,select{padding:12px;border:1px solid #1f2a44;border-radius:8px;background:#0a0e1a;color:#fff;width:100%;margin-bottom:10px}
+button{padding:12px;border:none;border-radius:8px;background:#00e0ff;color:#000;font-weight:800;cursor:pointer}
+#app{display:none;max-width:900px;margin:0 auto}
+.tabs{display:flex;gap:10px;margin-bottom:20px}
+.tab{padding:10px 20px;background:#121a2b;color:#fff;border:1px solid #1f2a44;border-radius:8px;cursor:pointer}
+.tab.active{background:#00e0ff;color:#000;font-weight:bold}
+.panel{display:none;background:#121a2b;border:1px solid #1f2a44;border-radius:12px;padding:20px}
+.panel.active{display:block}
+.item{display:flex;gap:10px;margin-bottom:10px;background:#0a0e1a;padding:10px;border-radius:8px}
+.item input{flex:1}
+.btn-danger{background:#ef4444;color:#fff}
+.btn-ok{background:#22c55e;color:#fff}
+table{width:100%;border-collapse:collapse;margin-top:15px}
+th,td{border-bottom:1px solid #1f2a44;padding:10px;text-align:left;font-size:14px}
+</style>
+</head>
+<body>
+
+<div class="login" id="loginBox">
+  <h1>Admin Login</h1>
+  <input id="tokenInput" type="password" placeholder="PIN Admin"/>
+  <button id="loginBtn">Masuk</button>
+</div>
+
+<div id="app">
+  <h1 style="margin-bottom:20px">Admin Dashboard</h1>
+  <div class="tabs">
+    <div class="tab active" data-tab="missions">Misi</div>
+    <div class="tab" data-tab="payments">Metode Withdraw</div>
+    <div class="tab" data-tab="claims">Klaim User</div>
+  </div>
+
+  <div class="panel active" id="panel-missions">
+    <h2>Daftar Misi</h2>
+    <div id="missionList"></div>
+    <button onclick="addMission()" style="margin-bottom:20px">+ Tambah Misi</button>
+    <button onclick="saveMissions()" style="background:#22c55e;color:#fff">💾 Simpan ke Firebase</button>
+  </div>
+
+  <div class="panel" id="panel-payments">
+    <h2>Metode Withdraw</h2>
+    <div id="paymentList"></div>
+    <button onclick="addPayment()" style="margin-bottom:20px">+ Tambah Metode</button>
+    <button onclick="savePayments()" style="background:#22c55e;color:#fff">💾 Simpan ke Firebase</button>
+  </div>
+
+  <div class="panel" id="panel-claims">
+    <h2>Daftar Klaim</h2>
+    <div id="claimsWrap"></div>
+  </div>
+</div>
+
+<script type="module">
+import { db } from './firebase-config.js';
+import { doc, getDoc, setDoc, collection, getDocs, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+let TOKEN = sessionStorage.getItem('admin_token') || '';
+let CONFIG = null;
+const SECRET_PIN = 'admin123'; // GANTI PIN INI
+
+document.getElementById('loginBtn').onclick = async () => {
+  if (document.getElementById('tokenInput').value === SECRET_PIN) {
+    sessionStorage.setItem('admin_token', SECRET_PIN);
+    document.getElementById('loginBox').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    await loadConfig();
+    renderAll();
+    loadClaims();
+  } else { alert('PIN Salah'); }
+};
+
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+  t.classList.add('active');
+  document.getElementById('panel-' + t.dataset.tab).classList.add('active');
+  if(t.dataset.tab === 'claims') loadClaims();
+});
+
+async function loadConfig() {
+  const docSnap = await getDoc(doc(db, "settings", "global"));
+  CONFIG = docSnap.exists() ? docSnap.data() : { missions: [], payments: [] };
+}
+
+function renderAll() {
+  const mWrap = document.getElementById('missionList'); mWrap.innerHTML = '';
+  (CONFIG.missions || []).forEach((m, i) => {
+    const el = document.createElement('div'); el.className = 'item';
+    el.innerHTML = `<input value="${m.title}" onchange="CONFIG.missions[${i}].title=this.value" placeholder="Judul Misi"/>
+      <input type="number" value="${m.reward}" onchange="CONFIG.missions[${i}].reward=+this.value" style="max-width:80px"/>
+      <button class="btn-danger" onclick="CONFIG.missions.splice(${i},1);renderAll()">Hapus</button>`;
+    mWrap.appendChild(el);
+  });
+
+  const pWrap = document.getElementById('paymentList'); pWrap.innerHTML = '';
+  (CONFIG.payments || []).forEach((p, i) => {
+    const el = document.createElement('div'); el.className = 'item';
+    el.innerHTML = `<input value="${p.name}" onchange="CONFIG.payments[${i}].name=this.value" placeholder="Nama (DANA/OVO)"/>
+      <input value="${p.holder||''}" onchange="CONFIG.payments[${i}].holder=this.value" placeholder="Atas Nama"/>
+      <label style="display:flex;align-items:center;gap:5px;color:#fff"><input type="checkbox" ${p.active?'checked':''} onchange="CONFIG.payments[${i}].active=this.checked"/> Aktif</label>
+      <button class="btn-danger" onclick="CONFIG.payments.splice(${i},1);renderAll()">Hapus</button>`;
+    pWrap.appendChild(el);
+  });
+}
+
+window.addMission = () => { CONFIG.missions.push({ id: Date.now(), title: '', reward: 10, link: '' }); renderAll(); };
+window.addPayment = () => { CONFIG.payments.push({ id: Date.now(), name: '', holder: '', active: true }); renderAll(); };
+window.saveMissions = async () => { await setDoc(doc(db, "settings", "global"), { missions: CONFIG.missions }, { merge: true }); alert('Misi disimpan!'); };
+window.savePayments = async () => { await setDoc(doc(db, "settings", "global"), { payments: CONFIG.payments }, { merge: true }); alert('Metode disimpan!'); };
+
+async function loadClaims() {
+  const wrap = document.getElementById('claimsWrap'); wrap.innerHTML = 'Loading...';
+  const snap = await getDocs(collection(db, "claims"));
+  if (snap.empty) { wrap.innerHTML = '<p>Belum ada klaim.</p>'; return; }
+  let html = '<table><tr><th>Nama</th><th>Kontak</th><th>Poin</th><th>Metode</th><th>Status</th><th>Aksi</th></tr>';
+  snap.forEach(doc => {
+    const c = doc.data();
+    html += `<tr><td>${c.name}</td><td>${c.contact}</td><td>${c.totalPoin}</td><td>${c.paymentMethod}</td><td>${c.status}</td>
+    <td><button class="btn-ok" onclick="markPaid('${doc.id}')">Paid</button>
+    <button class="btn-danger" onclick="delClaim('${doc.id}')">Hapus</button></td></tr>`;
+  });
+  wrap.innerHTML = html + '</table>';
+}
+
+window.markPaid = async (id) => { await updateDoc(doc(db, "claims", id), { status: 'paid' }); loadClaims(); };
+window.delClaim = async (id) => { if(confirm('Hapus?')) { await deleteDoc(doc(db, "claims", id)); loadClaims(); } };
+
+if (TOKEN === SECRET_PIN) {
+  document.getElementById('loginBox').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  loadConfig().then(() => { renderAll(); loadClaims(); });
+}
+</script>
+</body>
+</html>
