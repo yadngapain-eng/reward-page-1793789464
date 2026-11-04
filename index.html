@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Duniamu — Selesaikan Misi, Hasilkan</title>
+<title>Duniamu — Selesaikan Misi, Hasilkan 💸</title>
 <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
@@ -21,26 +21,29 @@
 
 <main class="hero">
   <h1>Selesaikan Misi, <span class="gradient">Hasilkan 💸</span></h1>
-  <p class="subtitle">Kerjakan semua misi di bawah, lalu klaim hadiahmu!</p>
+  <p class="subtitle" id="siteSubtitle">Kerjakan misi di bawah ini dan klaim hadiahmu.</p>
 
   <div class="stats">
     <div class="stat-card"><div class="stat-value" id="totalMissions">0</div><div class="stat-label">Total Misi</div></div>
     <div class="stat-card"><div class="stat-value" id="doneMissions">0</div><div class="stat-label">Selesai</div></div>
-    <div class="stat-card"><div class="stat-value" id="totalReward">0</div><div class="stat-label">Poin</div></div>
+    <div class="stat-card"><div class="stat-value" id="totalReward">0</div><div class="stat-label">Reward Poin</div></div>
   </div>
 
   <section class="missions" id="missionList"></section>
 
-  <div class="claim-box" id="claimBox" style="display:none">
-    <h2>🎉 Selamat! Semua misi selesai</h2>
-    <p>Total reward: <strong id="finalReward">0</strong> poin</p>
-    <button class="btn-claim" onclick="resetMissions()">🔄 Ulangi dari Awal</button>
+  <div class="claim-form" id="claimForm" style="display:none">
+    <h2>💰 Klaim Reward</h2>
+    <input id="claimName" placeholder="Nama lengkap" required/>
+    <input id="claimContact" placeholder="Email / WhatsApp" required/>
+    <select id="claimPayment" required></select>
+    <button class="btn-claim" id="submitClaim">Kirim Klaim</button>
   </div>
 
-  <p class="footer">© 2025 Duniamu · Dibuat dengan ❤️</p>
+  <button class="btn-claim" id="claimBtn" disabled>💰 Klaim Reward</button>
+  <p class="footer">© 2026 Duniamu</p>
 </main>
 
 <div class="toast" id="toast"></div>
-<script src="app.js"></script>
+<script type="module" src="app.js"></script>
 </body>
 </html>
