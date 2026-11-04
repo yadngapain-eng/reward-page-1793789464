@@ -1,87 +1,90 @@
-const MISSIONS = [
-  { id: 1, title: "⭐ Star repo GitHub", reward: 10, link: "https://github.com" },
-  { id: 2, title: "🍴 Fork repo GitHub", reward: 15, link: "https://github.com" },
-  { id: 3, title: "👀 Follow pemilik repo", reward: 10, link: "https://github.com" },
-  { id: 4, title: "📝 Buat issue di repo", reward: 20, link: "https://github.com" },
-  { id: 5, title: "📢 Share project ini", reward: 25, link: "" },
-];
+import { db } from './firebase-config.js';
+import { doc, getDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-const STORAGE_KEY = "duniamu_missions_simple";
+let CONFIG = null;
+const state = { completed: JSON.parse(localStorage.getItem('duniamu_missions') || '[]') };
 
-function getState() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
-  catch (e) { return []; }
+async function loadConfig() {
+  try {
+    const docRef = doc(db, "settings", "global");
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      CONFIG = docSnap.data();
+    } else {
+      // Fallback jika Firestore belum diisi admin
+      CONFIG = {
+        siteName: "Duniamu",
+        slogan: "Selesaikan Misi, Hasilkan 💸",
+        missions: [
+          { id: 1, title: "Star repo GitHub", reward: 10, link: "https://github.com" },
+          { id: 2, title: "Fork repo GitHub", reward: 15, link: "https://github.com" }
+        ],
+        payments: [{ id: "dana", name: "DANA", holder: "Admin", active: true }]
+      };
+    }
+    renderAll();
+  } catch (e) {
+    document.getElementById('siteSubtitle').textContent = 'Gagal load data: ' + e.message;
+  }
 }
 
-function setState(arr) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
-}
-
-function render() {
-  const done = getState();
-  const listEl = document.getElementById("missionList");
-  listEl.innerHTML = "";
-
-  MISSIONS.forEach(m => {
-    const isDone = done.includes(m.id);
-    const el = document.createElement("div");
-    el.className = "mission" + (isDone ? " done" : "");
-    el.innerHTML =
-      '<div class="mission-info">' +
-        '<div class="mission-title">' + m.title + '</div>' +
-        '<div class="mission-reward">+' + m.reward + ' poin</div>' +
-      '</div>' +
-      '<button class="btn-do" ' + (isDone ? 'disabled' : '') + '>' +
-        (isDone ? '✅ Selesai' : (m.link ? 'Kerjakan →' : 'Kerjakan')) +
-      '</button>';
-
-    const btn = el.querySelector("button");
-    btn.onclick = () => {
-      if (m.link) window.open(m.link, "_blank");
-      complete(m.id);
+function renderAll() {
+  document.getElementById('siteSubtitle').textContent = CONFIG.slogan || '';
+  const listEl = document.getElementById('missionList');
+  listEl.innerHTML = '';
+  (CONFIG.missions || []).forEach(m => {
+    const done = state.completed.includes(m.id);
+    const el = document.createElement('div');
+    el.className = 'mission' + (done ? ' done' : '');
+    el.innerHTML = `<div><div class="mission-title">${m.title}</div><div class="mission-reward">+${m.reward} poin</div></div>
+      <button class="btn-do" ${done ? 'disabled' : ''}>${done ? '✅ Selesai' : 'Kerjakan'}</button>`;
+    el.querySelector('button').onclick = () => {
+      if (m.link) window.open(m.link, '_blank');
+      if (!state.completed.includes(m.id)) {
+        state.completed.push(m.id);
+        localStorage.setItem('duniamu_missions', JSON.stringify(state.completed));
+        setTimeout(() => renderAll(), 300);
+      }
     };
     listEl.appendChild(el);
   });
 
-  updateStats(done);
-}
+  const paySel = document.getElementById('claimPayment');
+  paySel.innerHTML = '<option value="">Pilih metode</option>' +
+    (CONFIG.payments || []).filter(p => p.active).map(p => `<option value="${p.name}">${p.name}</option>`).join('');
 
-function complete(id) {
-  const done = getState();
-  if (done.includes(id)) return;
-  done.push(id);
-  setState(done);
-  showToast("🎉 Misi selesai!");
-  render();
-}
-
-function updateStats(done) {
-  const totalPoin = done.reduce((s, id) => {
-    const m = MISSIONS.find(x => x.id === id);
+  const totalPoin = state.completed.reduce((s, id) => {
+    const m = (CONFIG.missions || []).find(x => x.id === id);
     return s + (m ? m.reward : 0);
   }, 0);
-
-  document.getElementById("totalMissions").textContent = MISSIONS.length;
-  document.getElementById("doneMissions").textContent = done.length;
-  document.getElementById("totalReward").textContent = totalPoin;
-
-  const allDone = done.length === MISSIONS.length;
-  document.getElementById("claimBox").style.display = allDone ? "block" : "none";
-  document.getElementById("finalReward").textContent = totalPoin;
+  document.getElementById('totalMissions').textContent = (CONFIG.missions || []).length;
+  document.getElementById('doneMissions').textContent = state.completed.length;
+  document.getElementById('totalReward').textContent = totalPoin;
+  document.getElementById('claimBtn').disabled = state.completed.length !== (CONFIG.missions || []).length || state.completed.length === 0;
 }
 
-function resetMissions() {
-  if (!confirm("Yakin ulangi dari awal? Progress akan hilang.")) return;
-  setState([]);
-  showToast("🔄 Progress direset");
-  render();
-}
+document.getElementById('claimBtn').onclick = () => {
+  document.getElementById('claimForm').style.display = 'flex';
+  document.getElementById('claimBtn').style.display = 'none';
+};
 
-function showToast(msg) {
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 2500);
-}
+document.getElementById('submitClaim').onclick = async () => {
+  const name = document.getElementById('claimName').value.trim();
+  const contact = document.getElementById('claimContact').value.trim();
+  const paymentMethod = document.getElementById('claimPayment').value;
+  if (!name || !contact || !paymentMethod) return alert('Lengkapi data!');
 
-render();
+  const missionsDone = (CONFIG.missions || []).filter(m => state.completed.includes(m.id)).map(m => ({title: m.title, reward: m.reward}));
+  const totalPoin = missionsDone.reduce((s, m) => s + m.reward, 0);
+
+  try {
+    await addDoc(collection(db, "claims"), {
+      name, contact, paymentMethod, missions: missionsDone, totalPoin, status: "pending", createdAt: serverTimestamp()
+    });
+    alert('✅ Klaim terkirim!');
+    localStorage.removeItem('duniamu_missions');
+    location.reload();
+  } catch (e) { alert('Error: ' + e.message); }
+};
+
+loadConfig();
