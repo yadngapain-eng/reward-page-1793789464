@@ -21,7 +21,9 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .tab.active{background:#00e0ff;color:#000;font-weight:bold}
 .panel{display:none;background:#121a2b;border:1px solid #1f2a44;border-radius:12px;padding:20px}
 .panel.active{display:block}
-.item{display:flex;gap:10px;margin-bottom:10px;background:#0a0e1a;padding:10px;border-radius:8px;flex-wrap:wrap;align-items:center}
+.item{display:flex;gap:10px;margin-bottom:10px;background:#0a0e1a;padding:12px;border-radius:8px;flex-wrap:wrap;align-items:center}
+.item-input{display:flex;flex-direction:column;gap:4px;flex:1;min-width:120px}
+.item-input label{font-size:10px;color:#7d8ba3;text-transform:uppercase;font-weight:700}
 .item input{flex:1;min-width:100px;padding:8px;border-radius:6px;border:1px solid #1f2a44;background:#0a0e1a;color:#fff}
 .btn-danger{background:#ef4444;color:#fff;width:auto;padding:8px 12px}
 .btn-ok{background:#22c55e;color:#fff;width:auto;padding:8px 12px}
@@ -191,10 +193,10 @@ function renderAll() {
   (CONFIG.missions || []).forEach((m, i) => {
     const el = document.createElement('div'); el.className = 'item';
     el.innerHTML =
-      '<input value="' + (m.title||'').replace(/"/g,'&quot;') + '" onchange="CONFIG.missions[' + i + '].title=this.value" placeholder="Judul Misi"/>' +
-      '<input type="number" value="' + (m.reward||0) + '" onchange="CONFIG.missions[' + i + '].reward=+this.value" style="max-width:90px"/>' +
-      '<input value="' + (m.link||'').replace(/"/g,'&quot;') + '" onchange="CONFIG.missions[' + i + '].link=this.value" placeholder="Link (opsional)"/>' +
-      '<button class="btn-danger" onclick="CONFIG.missions.splice(' + i + ',1);renderAll()">Hapus</button>';
+      '<div class="item-input"><label>Judul Misi</label><input value="' + (m.title||'').replace(/"/g,'&quot;') + '" onchange="CONFIG.missions[' + i + '].title=this.value" placeholder="Contoh: Follow IG"/></div>' +
+      '<div class="item-input" style="flex:0 0 80px"><label>Poin</label><input type="number" value="' + (m.reward||0) + '" onchange="CONFIG.missions[' + i + '].reward=+this.value"/></div>' +
+      '<div class="item-input"><label>Link Tujuan (Opsional)</label><input value="' + (m.link||'').replace(/"/g,'&quot;') + '" onchange="CONFIG.missions[' + i + '].link=this.value" placeholder="https://..."/></div>' +
+      '<button class="btn-danger" style="align-self:flex-end" onclick="CONFIG.missions.splice(' + i + ',1);renderAll()">Hapus</button>';
     mWrap.appendChild(el);
   });
 
