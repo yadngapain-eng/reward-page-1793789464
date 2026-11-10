@@ -17,49 +17,92 @@
       <div class="brand-tag">Selesaikan Misi, Hasilkan</div>
     </div>
   </div>
+  <!-- Tempat Tombol Login / Profil User -->
+  <div class="user-nav" id="userBar"></div>
 </header>
 
-<main class="hero">
-  <h1>Selesaikan Misi, <span class="gradient">Hasilkan</span></h1>
-  <p class="subtitle" id="siteSubtitle">Kerjakan misi di bawah ini dan klaim hadiahmu.</p>
+<main class="container">
+  <div class="hero">
+    <h1>Selesaikan Misi, <span class="gradient">Hasilkan</span></h1>
+    <p class="subtitle" id="siteSubtitle">Kerjakan misi di bawah ini dan klaim hadiahmu.</p>
 
-  <div class="stats">
-    <div class="stat-card"><div class="stat-value" id="totalMissions">0</div><div class="stat-label">Total Misi</div></div>
-    <div class="stat-card"><div class="stat-value" id="doneMissions">0</div><div class="stat-label">Selesai</div></div>
-    <div class="stat-card"><div class="stat-value" id="totalReward">0</div><div class="stat-label">Reward Poin</div></div>
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-value" id="totalMissions">0</div>
+        <div class="stat-label">Total Misi</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="doneMissions">0</div>
+        <div class="stat-label">Selesai</div>
+      </div>
+      <div class="stat-card" style="border-color:var(--gold)">
+        <div class="stat-value" id="totalReward" style="color:var(--gold)">0</div>
+        <div class="stat-label">Poin Kamu</div>
+      </div>
+    </div>
   </div>
 
-  <section class="missions" id="missionList"></section>
-
-  <div class="claim-form claim-box" id="claimForm" style="display:none">
-    <h2>Klaim Reward</h2>
-    <p>Kirim klaim misi yang sudah kamu selesaikan.</p>
-    <input id="claimName" placeholder="Nama lengkap" required/>
-    <input id="claimContact" placeholder="Email / WhatsApp" required/>
-    <select id="claimPayment" required></select>
-    <button class="btn-claim" id="submitClaim">Kirim Klaim</button>
+  <!-- TAB NAVIGATION -->
+  <div class="tabs-container">
+    <button class="tab-btn active" data-target="panel-missions">Daftar Misi</button>
+    <button class="tab-btn" data-target="panel-withdraw">Withdraw</button>
   </div>
 
-  <button class="btn-claim" id="claimBtn" disabled>Klaim Reward</button>
+  <!-- PANEL MISI -->
+  <section class="panel active" id="panel-missions">
+    <div class="panel-header">
+      <h2>Misi Tersedia</h2>
+      <button class="btn-primary" id="claimBtn" disabled>Klaim Reward</button>
+    </div>
+    
+    <div id="claimForm" class="claim-form" style="display:none">
+      <h3 style="margin-bottom:10px;color:var(--gold)">Form Klaim</h3>
+      <input id="claimName" placeholder="Nama lengkap" required/>
+      <input id="claimContact" placeholder="Email / WhatsApp" required/>
+      <select id="claimPayment" required></select>
+      <button class="btn-primary" id="submitClaim">Kirim Klaim</button>
+    </div>
 
-  <section class="claim-box" style="margin-top:32px">
-    <h2>Withdraw</h2>
-    <p>Saldo tersedia: <strong id="withdrawAvailable">Rp 0</strong></p>
-    <form id="withdrawForm" style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
-      <input id="wdAmount" type="number" min="1" placeholder="Jumlah (Rp)" required/>
-      <select id="wdMethod" required>
-        <option value="bank">Transfer Bank</option>
-        <option value="ewallet">E-Wallet</option>
-      </select>
-      <input id="wdName" type="text" placeholder="Nama pemilik rekening" required/>
-      <input id="wdNumber" type="text" placeholder="Nomor rekening / e-wallet" required/>
-      <button type="submit" class="btn-claim">Kirim Permintaan</button>
-    </form>
-    <h3 style="margin-top:18px;color:var(--gold)">Riwayat Withdraw</h3>
-    <div id="withdrawHistory"></div>
+    <div class="mission-list" id="missionList"></div>
   </section>
 
-  <p class="footer">2026 Duniamu</p>
+  <!-- PANEL WITHDRAW -->
+  <section class="panel" id="panel-withdraw">
+    <div class="panel-header">
+      <h2>Penarikan Saldo</h2>
+      <div class="balance-badge">
+        Saldo: <span id="withdrawAvailable">Rp 0</span>
+      </div>
+    </div>
+
+    <form id="withdrawForm" class="withdraw-form">
+      <div class="input-group">
+        <label>Jumlah Penarikan (Rp)</label>
+        <input id="wdAmount" type="number" min="1" placeholder="Contoh: 50000" required/>
+      </div>
+      <div class="input-group">
+        <label>Metode</label>
+        <select id="wdMethod" required>
+          <option value="bank">Transfer Bank</option>
+          <option value="ewallet">E-Wallet (DANA/OVO/Gopay)</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Nama Pemilik Rekening</label>
+        <input id="wdName" type="text" placeholder="Sesuai buku tabungan" required/>
+      </div>
+      <div class="input-group">
+        <label>Nomor Rekening / E-Wallet</label>
+        <input id="wdNumber" type="text" placeholder="08xxxx atau nomor rekening" required/>
+      </div>
+      <button type="submit" class="btn-primary" style="margin-top:10px">Kirim Permintaan</button>
+    </form>
+
+    <h3 style="margin-top:24px;margin-bottom:12px;color:var(--muted);font-size:14px;text-transform:uppercase">Riwayat Penarikan</h3>
+    <div id="withdrawHistory" class="history-list"></div>
+  </section>
+
+  <p class="footer">© 2026 Duniamu. All rights reserved.</p>
 </main>
 
 <div class="toast" id="toast"></div>
