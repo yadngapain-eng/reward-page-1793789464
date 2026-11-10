@@ -11,8 +11,8 @@ body{background:#0a0e1a;color:#e5eefc;min-height:100vh;display:flex;align-items:
 .login{max-width:380px;width:100%;background:#121a2b;border:1px solid #1f2a44;border-radius:16px;padding:32px;display:flex;flex-direction:column;gap:16px;text-align:center}
 h1{font-size:22px;color:#00e0ff;margin-bottom:8px}
 p.sub{color:#7d8ba3;font-size:13px;margin-bottom:10px}
-button{padding:12px;border:none;border-radius:8px;background:#00e0ff;color:#000;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;width:100%}
-button:hover{filter:brightness(1.1)}
+button{padding:12px;border:none;border-radius:8px;background:#00e0ff;color:#000;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;transition:0.2s}
+button:hover:not(:disabled){filter:brightness(1.1)}
 button:disabled{opacity:.5;cursor:not-allowed}
 #app{display:none;width:100%;max-width:900px;margin:0 auto}
 .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
@@ -32,6 +32,10 @@ th,td{border-bottom:1px solid #1f2a44;padding:10px;text-align:left;font-size:14p
 .badge.approved,.badge.paid{background:#22c55e;color:#000}
 .badge.rejected{background:#ff2d55;color:#fff}
 .img-proof{width:60px;height:60px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid #1f2a44}
+/* Toast Notifikasi */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:#22c55e;color:#000;padding:14px 24px;border-radius:12px;font-weight:800;opacity:0;transition:.3s;z-index:9999;box-shadow:0 10px 30px rgba(0,0,0,0.5);display:flex;align-items:center;gap:10px;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.error{background:#ef4444;color:#fff}
 </style>
 </head>
 <body>
@@ -63,14 +67,14 @@ th,td{border-bottom:1px solid #1f2a44;padding:10px;text-align:left;font-size:14p
     <h2>Daftar Misi</h2>
     <div id="missionList"></div>
     <button onclick="addMission()" style="margin-bottom:20px;width:auto">+ Tambah Misi</button>
-    <button onclick="saveMissions()" style="background:#22c55e;color:#fff;width:auto">Simpan ke Firebase</button>
+    <button id="btnSaveMissions" onclick="saveMissions()" style="background:#22c55e;color:#fff;width:auto">Simpan ke Firebase</button>
   </div>
 
   <div class="panel" id="panel-payments">
     <h2>Metode Withdraw</h2>
     <div id="paymentList"></div>
     <button onclick="addPayment()" style="margin-bottom:20px;width:auto">+ Tambah Metode</button>
-    <button onclick="savePayments()" style="background:#22c55e;color:#fff;width:auto">Simpan ke Firebase</button>
+    <button id="btnSavePayments" onclick="savePayments()" style="background:#22c55e;color:#fff;width:auto">Simpan ke Firebase</button>
   </div>
 
   <div class="panel" id="panel-claims">
@@ -82,6 +86,12 @@ th,td{border-bottom:1px solid #1f2a44;padding:10px;text-align:left;font-size:14p
     <h2>Permintaan Withdraw</h2>
     <div id="withdrawalsWrap"></div>
   </div>
+</div>
+
+<!-- Komponen Notifikasi (Toast) -->
+<div class="toast" id="toast">
+  <span id="toastIcon">✅</span>
+  <span id="toastMsg">Berhasil!</span>
 </div>
 
 <script type="module">
@@ -96,8 +106,21 @@ import {
 
 const $ = id => document.getElementById(id);
 const fmt = n => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
-const ADMIN_EMAIL = "yadngapain@gmail.com"; // HANYA EMAIL INI YANG BOLEH MASUK
+const ADMIN_EMAIL = "yadngapain@gmail.com";
 let CONFIG = null;
+
+// === FUNGSI TOAST NOTIFIKASI ===
+function showToast(msg, isError = false) {
+  const t = $('toast');
+  $('toastMsg').textContent = msg;
+  $('toastIcon').textContent = isError ? '❌' : '✅';
+  
+  if (isError) t.classList.add('error');
+  else t.classList.remove('error');
+  
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
 
 // === LOGIN GOOGLE ===
 const provider = new GoogleAuthProvider();
@@ -108,13 +131,11 @@ $('googleLoginBtn').onclick = async () => {
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
     
-    // Cek Email
     if (user.email !== ADMIN_EMAIL) {
       await signOut(auth);
       $('loginMsg').textContent = 'Akses ditolak. Anda bukan admin.';
       return;
     }
-    // Jika email cocok, onAuthStateChanged akan otomatis membuka dashboard
   } catch (e) {
     $('loginMsg').textContent = e.message;
   }
@@ -124,30 +145,18 @@ window.logout = async () => {
   await signOut(auth);
 };
 
-// === CEK STATUS AUTH ===
 onAuthStateChanged(auth, async (u) => {
   if (!u) {
     $('loginBox').style.display = 'flex';
     $('app').style.display = 'none';
     return;
   }
-
-  // Pastikan yang login adalah email admin
   if (u.email !== ADMIN_EMAIL) {
     $('loginMsg').textContent = 'Akses ditolak.';
     await signOut(auth);
     return;
   }
-
-  // (Opsional) Cek Custom Claim admin: true (Jika Anda sudah mensetupnya di Firebase)
-  const token = await u.getIdTokenResult();
-  if (token.claims.admin !== true) {
-    $('loginMsg').textContent = 'Email benar, tapi akun ini belum diberi hak akses "admin" di Firebase.';
-    await signOut(auth);
-    return;
-  }
-
-  // Buka Dashboard
+  
   $('loginBox').style.display = 'none';
   $('app').style.display = 'block';
   
@@ -165,12 +174,16 @@ document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
   document.getElementById('panel-' + t.dataset.tab).classList.add('active');
 });
 
-// === LOAD CONFIG & RENDER ===
+// === LOAD & RENDER CONFIG ===
 async function loadConfig() {
-  const snap = await getDoc(doc(db, "settings", "global"));
-  CONFIG = snap.exists() ? snap.data() : { missions: [], payments: [] };
-  if (!CONFIG.missions) CONFIG.missions = [];
-  if (!CONFIG.payments) CONFIG.payments = [];
+  try {
+    const snap = await getDoc(doc(db, "settings", "global"));
+    CONFIG = snap.exists() ? snap.data() : { missions: [], payments: [] };
+    if (!CONFIG.missions) CONFIG.missions = [];
+    if (!CONFIG.payments) CONFIG.payments = [];
+  } catch (e) {
+    showToast('Gagal memuat data: ' + e.message, true);
+  }
 }
 
 function renderAll() {
@@ -199,13 +212,44 @@ function renderAll() {
 
 window.addMission = () => { CONFIG.missions.push({ id: Date.now(), title: '', reward: 10, link: '' }); renderAll(); };
 window.addPayment = () => { CONFIG.payments.push({ id: Date.now(), name: '', holder: '', active: true }); renderAll(); };
+
+// === FUNGSI SIMPAN DENGAN NOTIFIKASI ===
 window.saveMissions = async () => {
-  await setDoc(doc(db, "settings", "global"), { missions: CONFIG.missions }, { merge: true });
-  alert('Misi disimpan!');
+  const btn = $('btnSaveMissions');
+  const originalText = btn.textContent;
+  
+  btn.disabled = true;
+  btn.textContent = 'Menyimpan...';
+  
+  try {
+    await setDoc(doc(db, "settings", "global"), { missions: CONFIG.missions }, { merge: true });
+    showToast('Misi berhasil disimpan ke Firebase!', false);
+  } catch (e) {
+    console.error(e);
+    showToast('Gagal menyimpan: ' + e.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
 };
+
 window.savePayments = async () => {
-  await setDoc(doc(db, "settings", "global"), { payments: CONFIG.payments }, { merge: true });
-  alert('Metode disimpan!');
+  const btn = $('btnSavePayments');
+  const originalText = btn.textContent;
+  
+  btn.disabled = true;
+  btn.textContent = 'Menyimpan...';
+  
+  try {
+    await setDoc(doc(db, "settings", "global"), { payments: CONFIG.payments }, { merge: true });
+    showToast('Metode Withdraw berhasil disimpan!', false);
+  } catch (e) {
+    console.error(e);
+    showToast('Gagal menyimpan: ' + e.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
 };
 
 // === KLAIM & WITHDRAW ===
@@ -233,10 +277,18 @@ function listenClaims() {
   });
 }
 window.markClaim = async (id, status) => {
-  await updateDoc(doc(db, "claims", id), { status, processedAt: serverTimestamp() });
+  try {
+    await updateDoc(doc(db, "claims", id), { status, processedAt: serverTimestamp() });
+    showToast('Status klaim diperbarui ke ' + status, false);
+  } catch (e) { showToast('Gagal update: ' + e.message, true); }
 };
 window.delClaim = async (id) => {
-  if (confirm('Hapus klaim ini?')) await deleteDoc(doc(db, "claims", id));
+  if (confirm('Hapus klaim ini?')) {
+    try {
+      await deleteDoc(doc(db, "claims", id));
+      showToast('Klaim dihapus', false);
+    } catch (e) { showToast('Gagal hapus: ' + e.message, true); }
+  }
 };
 
 function listenWithdrawals() {
@@ -261,7 +313,10 @@ function listenWithdrawals() {
   });
 }
 window.markWd = async (id, status) => {
-  await updateDoc(doc(db, "withdrawals", id), { status, processedAt: serverTimestamp() });
+  try {
+    await updateDoc(doc(db, "withdrawals", id), { status, processedAt: serverTimestamp() });
+    showToast('Status withdraw diperbarui', false);
+  } catch (e) { showToast('Gagal update: ' + e.message, true); }
 };
 </script>
 </body>
