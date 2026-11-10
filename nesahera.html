@@ -7,41 +7,51 @@
 <title>Admin - Duniamu</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}
-body{background:#0a0e1a;color:#e5eefc;min-height:100vh;padding:20px}
-.login{max-width:380px;margin:100px auto;background:#121a2b;border:1px solid #1f2a44;border-radius:16px;padding:32px;display:flex;flex-direction:column;gap:14px}
-h1{font-size:22px;color:#00e0ff}
-input,select{padding:12px;border:1px solid #1f2a44;border-radius:8px;background:#0a0e1a;color:#fff;width:100%;margin-bottom:10px}
-button{padding:12px;border:none;border-radius:8px;background:#00e0ff;color:#000;font-weight:800;cursor:pointer}
-#app{display:none;max-width:900px;margin:0 auto}
+body{background:#0a0e1a;color:#e5eefc;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.login{max-width:380px;width:100%;background:#121a2b;border:1px solid #1f2a44;border-radius:16px;padding:32px;display:flex;flex-direction:column;gap:16px;text-align:center}
+h1{font-size:22px;color:#00e0ff;margin-bottom:8px}
+p.sub{color:#7d8ba3;font-size:13px;margin-bottom:10px}
+button{padding:12px;border:none;border-radius:8px;background:#00e0ff;color:#000;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;width:100%}
+button:hover{filter:brightness(1.1)}
+button:disabled{opacity:.5;cursor:not-allowed}
+#app{display:none;width:100%;max-width:900px;margin:0 auto}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
 .tabs{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
 .tab{padding:10px 20px;background:#121a2b;color:#fff;border:1px solid #1f2a44;border-radius:8px;cursor:pointer}
 .tab.active{background:#00e0ff;color:#000;font-weight:bold}
 .panel{display:none;background:#121a2b;border:1px solid #1f2a44;border-radius:12px;padding:20px}
 .panel.active{display:block}
-.item{display:flex;gap:10px;margin-bottom:10px;background:#0a0e1a;padding:10px;border-radius:8px;flex-wrap:wrap}
-.item input{flex:1;min-width:100px}
-.btn-danger{background:#ef4444;color:#fff}
-.btn-ok{background:#22c55e;color:#fff}
+.item{display:flex;gap:10px;margin-bottom:10px;background:#0a0e1a;padding:10px;border-radius:8px;flex-wrap:wrap;align-items:center}
+.item input{flex:1;min-width:100px;padding:8px;border-radius:6px;border:1px solid #1f2a44;background:#0a0e1a;color:#fff}
+.btn-danger{background:#ef4444;color:#fff;width:auto;padding:8px 12px}
+.btn-ok{background:#22c55e;color:#fff;width:auto;padding:8px 12px}
 table{width:100%;border-collapse:collapse;margin-top:15px}
 th,td{border-bottom:1px solid #1f2a44;padding:10px;text-align:left;font-size:14px}
 .badge{padding:2px 8px;border-radius:6px;font-size:11px;text-transform:uppercase}
 .badge.pending{background:#f59e0b;color:#000}
 .badge.approved,.badge.paid{background:#22c55e;color:#000}
 .badge.rejected{background:#ff2d55;color:#fff}
+.img-proof{width:60px;height:60px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid #1f2a44}
 </style>
 </head>
 <body>
 
 <div class="login" id="loginBox">
   <h1>Admin Login</h1>
-  <input id="adminEmail" type="email" placeholder="Email admin"/>
-  <input id="adminPass" type="password" placeholder="Password"/>
-  <button id="loginBtn">Masuk</button>
+  <p class="sub">Akses khusus administrator.</p>
+  <button id="googleLoginBtn">
+    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.3 0-9.7-3.1-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.6l6.2 5.2C41 35.1 44 30 44 24c0-1.3-.1-2.3-.4-3.5z"/></svg>
+    Masuk dengan Google
+  </button>
   <p id="loginMsg" style="color:#ff2d55;font-size:13px"></p>
 </div>
 
 <div id="app">
-  <h1 style="margin-bottom:20px">Admin Dashboard</h1>
+  <div class="header">
+    <h1>Admin Dashboard</h1>
+    <button onclick="logout()" style="width:auto;padding:8px 16px;background:#1f2a44;color:#fff">Logout</button>
+  </div>
+  
   <div class="tabs">
     <div class="tab active" data-tab="missions">Misi</div>
     <div class="tab" data-tab="payments">Metode Withdraw</div>
@@ -52,15 +62,15 @@ th,td{border-bottom:1px solid #1f2a44;padding:10px;text-align:left;font-size:14p
   <div class="panel active" id="panel-missions">
     <h2>Daftar Misi</h2>
     <div id="missionList"></div>
-    <button onclick="addMission()" style="margin-bottom:20px">+ Tambah Misi</button>
-    <button onclick="saveMissions()" style="background:#22c55e;color:#fff">Simpan ke Firebase</button>
+    <button onclick="addMission()" style="margin-bottom:20px;width:auto">+ Tambah Misi</button>
+    <button onclick="saveMissions()" style="background:#22c55e;color:#fff;width:auto">Simpan ke Firebase</button>
   </div>
 
   <div class="panel" id="panel-payments">
     <h2>Metode Withdraw</h2>
     <div id="paymentList"></div>
-    <button onclick="addPayment()" style="margin-bottom:20px">+ Tambah Metode</button>
-    <button onclick="savePayments()" style="background:#22c55e;color:#fff">Simpan ke Firebase</button>
+    <button onclick="addPayment()" style="margin-bottom:20px;width:auto">+ Tambah Metode</button>
+    <button onclick="savePayments()" style="background:#22c55e;color:#fff;width:auto">Simpan ke Firebase</button>
   </div>
 
   <div class="panel" id="panel-claims">
@@ -81,30 +91,73 @@ import {
   deleteDoc, updateDoc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import {
-  signInWithEmailAndPassword, onAuthStateChanged, signOut
+  GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 const $ = id => document.getElementById(id);
 const fmt = n => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
+const ADMIN_EMAIL = "yadngapain@gmail.com"; // HANYA EMAIL INI YANG BOLEH MASUK
 let CONFIG = null;
 
-onAuthStateChanged(auth, async (u) => {
-  if (!u) { $('loginBox').style.display='flex'; $('app').style.display='none'; return; }
-  const token = await u.getIdTokenResult();
-  if (token.claims.admin !== true) {
-    $('loginMsg').textContent = 'Akun ini bukan admin.';
-    await signOut(auth); return;
-  }
-  $('loginBox').style.display='none';
-  $('app').style.display='block';
-  await loadConfig(); renderAll(); listenClaims(); listenWithdrawals();
-});
+// === LOGIN GOOGLE ===
+const provider = new GoogleAuthProvider();
+provider.setCustomParameters({ prompt: 'select_account' });
 
-$('loginBtn').onclick = async () => {
-  try { await signInWithEmailAndPassword(auth, $('adminEmail').value, $('adminPass').value); }
-  catch (e) { $('loginMsg').textContent = e.message; }
+$('googleLoginBtn').onclick = async () => {
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+    
+    // Cek Email
+    if (user.email !== ADMIN_EMAIL) {
+      await signOut(auth);
+      $('loginMsg').textContent = 'Akses ditolak. Anda bukan admin.';
+      return;
+    }
+    // Jika email cocok, onAuthStateChanged akan otomatis membuka dashboard
+  } catch (e) {
+    $('loginMsg').textContent = e.message;
+  }
 };
 
+window.logout = async () => {
+  await signOut(auth);
+};
+
+// === CEK STATUS AUTH ===
+onAuthStateChanged(auth, async (u) => {
+  if (!u) {
+    $('loginBox').style.display = 'flex';
+    $('app').style.display = 'none';
+    return;
+  }
+
+  // Pastikan yang login adalah email admin
+  if (u.email !== ADMIN_EMAIL) {
+    $('loginMsg').textContent = 'Akses ditolak.';
+    await signOut(auth);
+    return;
+  }
+
+  // (Opsional) Cek Custom Claim admin: true (Jika Anda sudah mensetupnya di Firebase)
+  const token = await u.getIdTokenResult();
+  if (token.claims.admin !== true) {
+    $('loginMsg').textContent = 'Email benar, tapi akun ini belum diberi hak akses "admin" di Firebase.';
+    await signOut(auth);
+    return;
+  }
+
+  // Buka Dashboard
+  $('loginBox').style.display = 'none';
+  $('app').style.display = 'block';
+  
+  await loadConfig();
+  renderAll();
+  listenClaims();
+  listenWithdrawals();
+});
+
+// === TABS ===
 document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
   document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
   document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
@@ -112,6 +165,7 @@ document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
   document.getElementById('panel-' + t.dataset.tab).classList.add('active');
 });
 
+// === LOAD CONFIG & RENDER ===
 async function loadConfig() {
   const snap = await getDoc(doc(db, "settings", "global"));
   CONFIG = snap.exists() ? snap.data() : { missions: [], payments: [] };
@@ -154,19 +208,21 @@ window.savePayments = async () => {
   alert('Metode disimpan!');
 };
 
+// === KLAIM & WITHDRAW ===
 function listenClaims() {
   onSnapshot(collection(db, "claims"), snap => {
     const wrap = $('claimsWrap');
     if (snap.empty) { wrap.innerHTML = '<p>Belum ada klaim.</p>'; return; }
-    let html = '<table><tr><th>Nama</th><th>Kontak</th><th>Poin</th><th>Metode</th><th>Status</th><th>Aksi</th></tr>';
+    let html = '<table><tr><th>User</th><th>Misi</th><th>Poin</th><th>Bukti</th><th>Status & Alasan AI</th><th>Aksi</th></tr>';
     snap.forEach(d => {
       const c = d.data();
       html +=
-        '<tr><td>' + (c.name||'-') + '</td>' +
-        '<td>' + (c.contact||'-') + '</td>' +
-        '<td>' + (c.totalPoin||0) + '</td>' +
-        '<td>' + (c.paymentMethod||'-') + '</td>' +
-        '<td><span class="badge ' + c.status + '">' + c.status + '</span></td>' +
+        '<tr>' +
+        '<td>' + (c.userEmail || c.userName || '-') + '</td>' +
+        '<td>' + (c.missionTitle || '-') + '</td>' +
+        '<td>' + (c.reward || 0) + '</td>' +
+        '<td>' + (c.proofUrl ? '<a href="' + c.proofUrl + '" target="_blank"><img src="' + c.proofUrl + '" class="img-proof"/></a>' : '-') + '</td>' +
+        '<td><span class="badge ' + c.status + '">' + c.status + '</span><br/><small style="color:#7d8ba3">' + (c.aiReason || '') + '</small></td>' +
         '<td>' +
           '<button class="btn-ok" onclick="markClaim(\'' + d.id + '\',\'approved\')">Setujui</button>' +
           '<button class="btn-danger" onclick="markClaim(\'' + d.id + '\',\'rejected\')">Tolak</button>' +
@@ -187,17 +243,17 @@ function listenWithdrawals() {
   onSnapshot(collection(db, "withdrawals"), snap => {
     const wrap = $('withdrawalsWrap');
     if (snap.empty) { wrap.innerHTML = '<p>Belum ada permintaan.</p>'; return; }
-    let html = '<table><tr><th>Jumlah</th><th>Metode</th><th>Rekening</th><th>Status</th><th>Aksi</th></tr>';
+    let html = '<table><tr><th>User</th><th>Jumlah</th><th>Rekening</th><th>Status</th><th>Aksi</th></tr>';
     snap.forEach(d => {
       const w = d.data();
       html +=
-        '<tr><td>' + fmt(w.amount) + '</td>' +
-        '<td>' + (w.method||'-') + '</td>' +
+        '<tr>' +
+        '<td>' + (w.userEmail || '-') + '</td>' +
+        '<td>' + fmt(w.amount) + '</td>' +
         '<td>' + (w.accountName||'') + ' - ' + (w.accountNumber||'') + '</td>' +
         '<td><span class="badge ' + w.status + '">' + w.status + '</span></td>' +
         '<td>' +
           '<button class="btn-ok" onclick="markWd(\'' + d.id + '\',\'paid\')">Bayar</button>' +
-          '<button class="btn-ok" onclick="markWd(\'' + d.id + '\',\'approved\')">Setujui</button>' +
           '<button class="btn-danger" onclick="markWd(\'' + d.id + '\',\'rejected\')">Tolak</button>' +
         '</td></tr>';
     });
