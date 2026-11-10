@@ -7,7 +7,7 @@ import {
   signOut, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-let CONFIG = null;
+let CONFIG = { missions: [], slogan: "Selesaikan Misi, Hasilkan" };
 let USER = null;
 let CLAIMS = [];
 let WITHDRAWALS = [];
@@ -69,48 +69,47 @@ function renderUserBar(u) {
     '</div>';
 }
 
-// === LOAD DATA ===
+// === LOAD DATA (Hapus data dummy) ===
 async function loadConfig() {
   try {
     const snap = await getDoc(doc(db, "settings", "global"));
-    if (snap.exists()) CONFIG = snap.data();
-  } catch (e) { console.warn('loadConfig:', e.message); }
-  if (!CONFIG) {
-    CONFIG = {
-      siteName: "Duniamu",
-      slogan: "Selesaikan Misi, Hasilkan",
-      missions: [
-        { id: 1, title: "Star repo GitHub", reward: 10, link: "https://github.com" },
-        { id: 2, title: "Fork repo GitHub", reward: 15, link: "https://github.com" }
-      ],
-      payments: [{ id: "dana", name: "DANA", holder: "Admin", active: true }]
-    };
+    if (snap.exists()) {
+      CONFIG = snap.data();
+    } else {
+      // Jika admin belum mengisi, biarkan kosong (tidak ada misi dummy)
+      CONFIG = { missions: [], slogan: "Selesaikan Misi, Hasilkan" };
+    }
+  } catch (e) { 
+    console.warn('loadConfig:', e.message);
+    CONFIG = { missions: [], slogan: "Selesaikan Misi, Hasilkan" };
   }
   renderAll();
 }
 
 function listenUserData() {
   if (!USER) return;
+  // Listen klaim misi (untuk hitung saldo)
   onSnapshot(query(collection(db, "claims"), where("userId", "==", USER.uid)),
     snap => { CLAIMS = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderAll(); });
+  // Listen withdraw
   onSnapshot(query(collection(db, "withdrawals"), where("userId", "==", USER.uid)),
     snap => { WITHDRAWALS = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderWithdrawals(); renderAll(); });
 }
 
-// === LOGIC ===
+// === LOGIC SALDO ===
 function computeEarned() {
   return CLAIMS.filter(c => c.status !== 'rejected')
-               .reduce((s, c) => s + Number(c.totalPoin || 0), 0);
+               .reduce((s, c) => s + Number(c.reward || 0), 0);
 }
 function computeWithdrawn() {
   return WITHDRAWALS.filter(w => w.status === 'paid' || w.status === 'approved')
                     .reduce((s, w) => s + Number(w.amount || 0), 0);
 }
 function computeAvailable() { return Math.max(0, computeEarned() - computeWithdrawn()); }
-function missionsClaimedIds() {
+function getCompletedMissions() {
   const ids = new Set();
   CLAIMS.filter(c => c.status !== 'rejected').forEach(c => {
-    (c.missions || []).forEach(m => ids.add(m.title));
+    if(c.missionId) ids.add(c.missionId);
   });
   return ids;
 }
@@ -120,51 +119,37 @@ function renderAll() {
   if (!CONFIG) return;
   if ($('siteSubtitle')) $('siteSubtitle').textContent = CONFIG.slogan || '';
   
-  const doneTitles = missionsClaimedIds();
+  const doneIds = getCompletedMissions();
   const listEl = $('missionList');
   
   if (listEl) {
     listEl.innerHTML = '';
-    (CONFIG.missions || []).forEach(m => {
-      const done = doneTitles.has(m.title);
-      const el = document.createElement('div');
-      el.className = 'mission-card' + (done ? ' done' : '');
-      el.innerHTML =
-        '<div class="mission-info">' +
-          '<div class="mission-title">' + m.title + '</div>' +
-          '<div class="mission-reward">+' + m.reward + ' Poin</div>' +
-        '</div>' +
-        '<button class="btn-mission ' + (done ? 'btn-done' : '') + '" ' + (done || !USER ? 'disabled' : '') + '>' +
-          (!USER ? 'Login Dulu' : (done ? 'Selesai' : 'Kerjakan')) +
-        '</button>';
-      
-      el.querySelector('button').onclick = () => {
-        if (!USER) return window.location.href = 'login.html';
-        if (m.link) window.open(m.link, '_blank');
-        toast('Misi ditandai selesai. Silakan klik Klaim Reward.');
-        if ($('claimBtn')) {
-          $('claimBtn').disabled = false;
-          $('claimBtn').style.animation = 'pulse 1.5s infinite';
-        }
-      };
-      listEl.appendChild(el);
-    });
-  }
-
-  if ($('claimPayment')) {
-    $('claimPayment').innerHTML = '<option value="">Pilih metode pembayaran</option>' +
-      (CONFIG.payments || []).filter(p => p.active)
-        .map(p => '<option value="' + p.name + '">' + p.name + '</option>').join('');
+    if (!CONFIG.missions || CONFIG.missions.length === 0) {
+      listEl.innerHTML = '<div class="empty-state">Belum ada misi yang tersedia saat ini.</div>';
+    } else {
+      CONFIG.missions.forEach(m => {
+        const done = doneIds.has(m.id);
+        const el = document.createElement('div');
+        el.className = 'mission-card' + (done ? ' done' : '');
+        el.innerHTML =
+          '<div class="mission-info">' +
+            '<div class="mission-title">' + m.title + '</div>' +
+            '<div class="mission-reward">+' + m.reward + ' Poin</div>' +
+          '</div>' +
+          '<button class="btn-mission ' + (done ? 'btn-done' : '') + '" ' + (done || !USER ? 'disabled' : '') + '>' +
+            (!USER ? 'Login Dulu' : (done ? 'Selesai' : 'Kerjakan')) +
+          '</button>';
+        
+        el.querySelector('button').onclick = () => handleMissionClick(m);
+        listEl.appendChild(el);
+      });
+    }
   }
 
   const totalPoin = computeEarned();
   if ($('totalMissions')) $('totalMissions').textContent = (CONFIG.missions || []).length;
-  if ($('doneMissions')) $('doneMissions').textContent = doneTitles.size;
+  if ($('doneMissions')) $('doneMissions').textContent = doneIds.size;
   if ($('totalReward')) $('totalReward').textContent = totalPoin;
-  if ($('claimBtn')) {
-    $('claimBtn').disabled = !USER || doneTitles.size === 0;
-    $('claimBtn').style.animation = 'none';
-  }
   if ($('withdrawAvailable')) $('withdrawAvailable').textContent = fmt(computeAvailable());
 }
 
@@ -188,48 +173,39 @@ function renderWithdrawals() {
 }
 
 // === ACTIONS ===
+async function handleMissionClick(m) {
+  if (!USER) return window.location.href = 'login.html';
+  if (m.link) window.open(m.link, '_blank');
+  
+  // Konfirmasi ke user
+  if(!confirm('Selesaikan misi: "' + m.title + '"?\nPastikan kamu sudah melakukannya.')) return;
+
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = 'Menyimpan...';
+
+  try {
+    // Otomatis simpan poin ke database
+    await addDoc(collection(db, "claims"), {
+      userId: USER.uid,
+      userEmail: USER.email,
+      userName: USER.displayName,
+      missionId: m.id,
+      missionTitle: m.title,
+      reward: Number(m.reward),
+      status: "approved", // Otomatis disetujui
+      createdAt: serverTimestamp()
+    });
+    toast('Misi selesai! +' + m.reward + ' Poin masuk.');
+  } catch (e) {
+    toast('Gagal menyimpan: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = 'Kerjakan';
+  }
+}
+
+// === WITHDRAW FORM ===
 document.addEventListener('DOMContentLoaded', () => {
-  if ($('claimBtn')) $('claimBtn').onclick = () => {
-    if (!USER) return window.location.href = 'login.html';
-    $('claimForm').style.display = 'flex';
-    $('claimBtn').style.display = 'none';
-  };
-
-  if ($('submitClaim')) $('submitClaim').onclick = async () => {
-    if (!USER) return toast('Masuk dulu');
-    const name = $('claimName').value.trim();
-    const contact = $('claimContact').value.trim();
-    const paymentMethod = $('claimPayment').value;
-    if (!name || !contact || !paymentMethod) return toast('Lengkapi data!');
-    
-    const doneTitles = missionsClaimedIds();
-    const pending = (CONFIG.missions || []).filter(m => !doneTitles.has(m.title));
-    if (!pending.length) return toast('Tidak ada misi baru untuk diklaim');
-    
-    const payloadMissions = pending.map(m => ({ title: m.title, reward: m.reward }));
-    const totalPoin = payloadMissions.reduce((s, m) => s + Number(m.reward || 0), 0);
-    
-    $('submitClaim').disabled = true;
-    try {
-      await addDoc(collection(db, "claims"), {
-        userId: USER.uid,
-        userEmail: USER.email,
-        userPhoto: USER.photoURL,
-        userName: USER.displayName,
-        name, contact, paymentMethod,
-        missions: payloadMissions, totalPoin,
-        status: "pending", createdAt: serverTimestamp()
-      });
-      toast('Klaim berhasil dikirim!');
-      $('claimForm').style.display = 'none';
-      $('claimBtn').style.display = 'block';
-      $('submitClaim').disabled = false;
-    } catch (e) { 
-      toast('Gagal: ' + e.message); 
-      $('submitClaim').disabled = false;
-    }
-  };
-
   if ($('withdrawForm')) $('withdrawForm').onsubmit = async (ev) => {
     ev.preventDefault();
     if (!USER) return window.location.href = 'login.html';
@@ -240,7 +216,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const accNum = $('wdNumber').value.trim();
     const available = computeAvailable();
     
-    if (!amount || amount <= 0) return toast('Jumlah tidak valid');
+    // Validasi Minimal 10.000
+    if (amount < 10000) return toast('Minimal penarikan adalah Rp 10.000');
     if (amount > available) return toast('Saldo tidak cukup. Tersedia: ' + fmt(available));
     if (!accName || !accNum) return toast('Lengkapi data rekening');
     

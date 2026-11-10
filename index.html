@@ -17,14 +17,13 @@
       <div class="brand-tag">Selesaikan Misi, Hasilkan</div>
     </div>
   </div>
-  <!-- Tempat Tombol Login / Profil User -->
   <div class="user-nav" id="userBar"></div>
 </header>
 
 <main class="container">
   <div class="hero">
     <h1>Selesaikan Misi, <span class="gradient">Hasilkan</span></h1>
-    <p class="subtitle" id="siteSubtitle">Kerjakan misi di bawah ini dan klaim hadiahmu.</p>
+    <p class="subtitle" id="siteSubtitle">Kerjakan misi dan saldo kamu akan otomatis bertambah.</p>
 
     <div class="stats">
       <div class="stat-card">
@@ -42,27 +41,16 @@
     </div>
   </div>
 
-  <!-- TAB NAVIGATION -->
   <div class="tabs-container">
     <button class="tab-btn active" data-target="panel-missions">Daftar Misi</button>
     <button class="tab-btn" data-target="panel-withdraw">Withdraw</button>
   </div>
 
-  <!-- PANEL MISI -->
+  <!-- PANEL MISI (Form Klaim sudah dihapus total) -->
   <section class="panel active" id="panel-missions">
     <div class="panel-header">
       <h2>Misi Tersedia</h2>
-      <button class="btn-primary" id="claimBtn" disabled>Klaim Reward</button>
     </div>
-    
-    <div id="claimForm" class="claim-form" style="display:none">
-      <h3 style="margin-bottom:10px;color:var(--gold)">Form Klaim</h3>
-      <input id="claimName" placeholder="Nama lengkap" required/>
-      <input id="claimContact" placeholder="Email / WhatsApp" required/>
-      <select id="claimPayment" required></select>
-      <button class="btn-primary" id="submitClaim">Kirim Klaim</button>
-    </div>
-
     <div class="mission-list" id="missionList"></div>
   </section>
 
@@ -77,8 +65,8 @@
 
     <form id="withdrawForm" class="withdraw-form">
       <div class="input-group">
-        <label>Jumlah Penarikan (Rp)</label>
-        <input id="wdAmount" type="number" min="1" placeholder="Contoh: 50000" required/>
+        <label>Jumlah Penarikan (Minimal Rp 10.000)</label>
+        <input id="wdAmount" type="number" min="10000" placeholder="Contoh: 10000" required/>
       </div>
       <div class="input-group">
         <label>Metode</label>
