@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Masuk - Duniamu</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body class="auth-body">
+<div class="bg-glow"></div>
+
+<main class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <div class="logo-circle">D</div>
+      <div class="auth-brand-name">Duniamu</div>
+    </div>
+
+    <h1 class="auth-title">Selamat datang kembali</h1>
+    <p class="auth-sub">Masuk untuk melanjutkan mengerjakan misi dan menarik reward.</p>
+
+    <button class="auth-google" id="googleBtn" type="button">
+      <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+        <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z"/>
+        <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+        <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.3 0-9.7-3.1-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/>
+        <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.6l6.2 5.2C41 35.1 44 30 44 24c0-1.3-.1-2.3-.4-3.5z"/>
+      </svg>
+      <span>Lanjutkan dengan Google</span>
+    </button>
+
+    <div class="auth-divider"><span>atau</span></div>
+
+    <form id="emailForm" class="auth-form">
+      <label class="auth-label" for="email">Email</label>
+      <input id="email" type="email" autocomplete="email" placeholder="nama@email.com" required/>
+
+      <label class="auth-label" for="password">Kata sandi</label>
+      <input id="password" type="password" autocomplete="current-password" placeholder="********" required/>
+
+      <button class="auth-submit" type="submit" id="emailBtn">Masuk</button>
+    </form>
+
+    <p class="auth-foot">
+      <a href="#" id="registerLink">Daftar</a>
+      &middot;
+      <a href="#" id="forgotLink">Lupa sandi</a>
+    </p>
+
+    <p class="auth-msg" id="authMsg"></p>
+
+    <p class="auth-back"><a href="index.html">Kembali ke beranda</a></p>
+  </div>
+</main>
+
+<script type="module">
+import { auth } from './firebase-config.js';
+import {
+  GoogleAuthProvider, signInWithPopup,
+  signInWithEmailAndPassword, createUserWithEmailAndPassword,
+  sendPasswordResetEmail, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+const $ = id => document.getElementById(id);
+const msg = (t, ok) => {
+  const el = $('authMsg');
+  el.textContent = t;
+  el.style.color = ok ? '#22c55e' : '#ff2d55';
+};
+
+onAuthStateChanged(auth, u => {
+  if (u) location.replace('index.html');
+});
+
+const provider = new GoogleAuthProvider();
+provider.setCustomParameters({ prompt: 'select_account' });
+
+$('googleBtn').onclick = async () => {
+  try {
+    await signInWithPopup(auth, provider);
+    location.replace('index.html');
+  } catch (e) {
+    if (e.code === 'auth/popup-closed-by-user') return;
+    msg('Gagal login Google: ' + e.message, false);
+  }
+};
+
+let mode = 'login';
+
+$('registerLink').onclick = (ev) => {
+  ev.preventDefault();
+  mode = mode === 'login' ? 'register' : 'login';
+  document.querySelector('.auth-title').textContent =
+    mode === 'login' ? 'Selamat datang kembali' : 'Buat akun baru';
+  document.querySelector('.auth-sub').textContent =
+    mode === 'login'
+      ? 'Masuk untuk melanjutkan mengerjakan misi dan menarik reward.'
+      : 'Daftar dengan email untuk mulai mengumpulkan reward.';
+  $('emailBtn').textContent = mode === 'login' ? 'Masuk' : 'Daftar';
+  $('registerLink').textContent = mode === 'login' ? 'Daftar' : 'Sudah punya akun? Masuk';
+};
+
+$('forgotLink').onclick = async (ev) => {
+  ev.preventDefault();
+  const email = $('email').value.trim();
+  if (!email) return msg('Isi email dulu untuk reset sandi', false);
+  try {
+    await sendPasswordResetEmail(auth, email);
+    msg('Link reset dikirim ke ' + email, true);
+  } catch (e) { msg('Gagal: ' + e.message, false); }
+};
+
+$('emailForm').onsubmit = async (ev) => {
+  ev.preventDefault();
+  const email = $('email').value.trim();
+  const pass  = $('password').value;
+  $('emailBtn').disabled = true;
+  try {
+    if (mode === 'login') {
+      await signInWithEmailAndPassword(auth, email, pass);
+    } else {
+      await createUserWithEmailAndPassword(auth, email, pass);
+    }
+    location.replace('index.html');
+  } catch (e) {
+    msg('Gagal: ' + e.message, false);
+  } finally {
+    $('emailBtn').disabled = false;
+  }
+};
+</script>
+</body>
+</html>

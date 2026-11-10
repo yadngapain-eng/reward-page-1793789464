@@ -5,7 +5,11 @@ service cloud.firestore {
     function isAdmin() {
       return request.auth != null && request.auth.token.admin == true;
     }
-    function isSignedIn() { return request.auth != null; }
+    function isRealUser() {
+      return request.auth != null
+        && request.auth.token.email != null
+        && request.auth.token.email_verified == true;
+    }
 
     match /settings/{docId} {
       allow read: if true;
@@ -13,21 +17,23 @@ service cloud.firestore {
     }
 
     match /claims/{claimId} {
-      allow create: if isSignedIn()
+      allow create: if isRealUser()
                     && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.userEmail == request.auth.token.email
                     && request.resource.data.status == 'pending';
-      allow read: if isSignedIn()
+      allow read: if request.auth != null
                   && (resource.data.userId == request.auth.uid || isAdmin());
       allow update, delete: if isAdmin();
     }
 
     match /withdrawals/{wid} {
-      allow create: if isSignedIn()
+      allow create: if isRealUser()
                     && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.userEmail == request.auth.token.email
                     && request.resource.data.status == 'pending'
                     && request.resource.data.amount is number
                     && request.resource.data.amount > 0;
-      allow read: if isSignedIn()
+      allow read: if request.auth != null
                   && (resource.data.userId == request.auth.uid || isAdmin());
       allow update, delete: if isAdmin();
     }

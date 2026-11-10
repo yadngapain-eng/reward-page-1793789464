@@ -4,7 +4,7 @@ import {
   query, where, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import {
-  signInAnonymously, onAuthStateChanged
+  GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 let CONFIG = null;
@@ -22,9 +22,36 @@ function toast(msg) {
 
 onAuthStateChanged(auth, u => {
   USER = u;
-  if (u) { loadConfig(); listenUserData(); }
+  if (u) {
+    renderUserBar(u);
+    loadConfig();
+    listenUserData();
+  } else {
+    renderUserBar(null);
+    CLAIMS = []; WITHDRAWALS = [];
+    renderAll();
+    renderWithdrawals();
+  }
 });
-signInAnonymously(auth).catch(e => console.warn('anon auth:', e.message));
+
+window.googleLogout = async () => {
+  if (!confirm('Keluar dari akun?')) return;
+  await signOut(auth);
+  toast('Sudah keluar');
+};
+
+function renderUserBar(u) {
+  const bar = $('userBar'); if (!bar) return;
+  if (!u) {
+    bar.innerHTML =
+      '<a class="btn-google" href="login.html">Masuk</a>';
+    return;
+  }
+  bar.innerHTML =
+    '<img class="avatar" src="' + (u.photoURL || '') + '" alt=""/>' +
+    '<span class="user-name">' + (u.displayName || u.email || 'User') + '</span>' +
+    '<button class="btn-logout" onclick="googleLogout()">Keluar</button>';
+}
 
 async function loadConfig() {
   try {
@@ -86,10 +113,11 @@ function renderAll() {
           '<div class="mission-title">' + m.title + '</div>' +
           '<div class="mission-reward">+' + m.reward + ' poin</div>' +
         '</div>' +
-        '<button class="btn-do" ' + (done ? 'disabled' : '') + '>' +
-          (done ? 'Selesai' : 'Kerjakan') +
+        '<button class="btn-do" ' + (done || !USER ? 'disabled' : '') + '>' +
+          (!USER ? 'Login dulu' : (done ? 'Selesai' : 'Kerjakan')) +
         '</button>';
       el.querySelector('button').onclick = () => {
+        if (!USER) return toast('Masuk dulu untuk mengerjakan misi');
         if (m.link) window.open(m.link, '_blank');
         toast('Misi ditandai selesai. Klik Klaim Reward.');
         if ($('claimBtn')) {
@@ -109,13 +137,22 @@ function renderAll() {
   if ($('totalMissions')) $('totalMissions').textContent = (CONFIG.missions || []).length;
   if ($('doneMissions')) $('doneMissions').textContent = doneTitles.size;
   if ($('totalReward')) $('totalReward').textContent = totalPoin;
-  if ($('claimBtn')) $('claimBtn').disabled = doneTitles.size === 0;
+  if ($('claimBtn')) $('claimBtn').disabled = !USER || doneTitles.size === 0;
   if ($('withdrawAvailable')) $('withdrawAvailable').textContent = fmt(computeAvailable());
+
+  if (!USER) {
+    if ($('claimForm')) $('claimForm').style.display = 'none';
+    if ($('claimBtn')) $('claimBtn').style.display = 'none';
+  } else {
+    if ($('claimBtn')) $('claimBtn').style.display = 'block';
+  }
 }
 
 function renderWithdrawals() {
   const box = $('withdrawHistory'); if (!box) return;
-  if (!WITHDRAWALS.length) { box.innerHTML = '<p class="muted">Belum ada penarikan.</p>'; return; }
+  if (!WITHDRAWALS.length) {
+    box.innerHTML = '<p class="muted">Belum ada penarikan.</p>'; return;
+  }
   box.innerHTML = WITHDRAWALS
     .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
     .map(w =>
@@ -128,11 +165,12 @@ function renderWithdrawals() {
 
 document.addEventListener('DOMContentLoaded', () => {
   if ($('claimBtn')) $('claimBtn').onclick = () => {
+    if (!USER) return toast('Masuk dulu');
     $('claimForm').style.display = 'flex';
     $('claimBtn').style.display = 'none';
   };
   if ($('submitClaim')) $('submitClaim').onclick = async () => {
-    if (!USER) return toast('Menghubungkan... coba lagi');
+    if (!USER) return toast('Masuk dulu');
     const name = $('claimName').value.trim();
     const contact = $('claimContact').value.trim();
     const paymentMethod = $('claimPayment').value;
@@ -144,7 +182,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalPoin = payloadMissions.reduce((s, m) => s + Number(m.reward || 0), 0);
     try {
       await addDoc(collection(db, "claims"), {
-        userId: USER.uid, name, contact, paymentMethod,
+        userId: USER.uid,
+        userEmail: USER.email,
+        userPhoto: USER.photoURL,
+        userName: USER.displayName,
+        name, contact, paymentMethod,
         missions: payloadMissions, totalPoin,
         status: "pending", createdAt: serverTimestamp()
       });
@@ -155,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   if ($('withdrawForm')) $('withdrawForm').onsubmit = async (ev) => {
     ev.preventDefault();
-    if (!USER) return toast('Menghubungkan... coba lagi');
+    if (!USER) return toast('Masuk dulu');
     const amount = Number($('wdAmount').value);
     const method = $('wdMethod').value;
     const accName = $('wdName').value.trim();
@@ -166,7 +208,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!accName || !accNum) return toast('Lengkapi data rekening');
     try {
       await addDoc(collection(db, "withdrawals"), {
-        userId: USER.uid, amount, method,
+        userId: USER.uid,
+        userEmail: USER.email,
+        userName: USER.displayName,
+        amount, method,
         accountName: accName, accountNumber: accNum,
         status: 'pending', createdAt: serverTimestamp(),
         processedAt: null, adminNote: null
