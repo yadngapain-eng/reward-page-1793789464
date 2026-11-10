@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Duniamu — Selesaikan Misi, Hasilkan 💸</title>
+<title>Duniamu - Selesaikan Misi, Hasilkan</title>
 <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
@@ -14,13 +14,13 @@
     <div class="logo-circle">D</div>
     <div>
       <div class="brand-name">Duniamu</div>
-      <div class="brand-tag">Selesaikan Misi, Hasilkan 💸</div>
+      <div class="brand-tag">Selesaikan Misi, Hasilkan</div>
     </div>
   </div>
 </header>
 
 <main class="hero">
-  <h1>Selesaikan Misi, <span class="gradient">Hasilkan 💸</span></h1>
+  <h1>Selesaikan Misi, <span class="gradient">Hasilkan</span></h1>
   <p class="subtitle" id="siteSubtitle">Kerjakan misi di bawah ini dan klaim hadiahmu.</p>
 
   <div class="stats">
@@ -31,16 +31,35 @@
 
   <section class="missions" id="missionList"></section>
 
-  <div class="claim-form" id="claimForm" style="display:none">
-    <h2>💰 Klaim Reward</h2>
+  <div class="claim-form claim-box" id="claimForm" style="display:none">
+    <h2>Klaim Reward</h2>
+    <p>Kirim klaim misi yang sudah kamu selesaikan.</p>
     <input id="claimName" placeholder="Nama lengkap" required/>
     <input id="claimContact" placeholder="Email / WhatsApp" required/>
     <select id="claimPayment" required></select>
     <button class="btn-claim" id="submitClaim">Kirim Klaim</button>
   </div>
 
-  <button class="btn-claim" id="claimBtn" disabled>💰 Klaim Reward</button>
-  <p class="footer">© 2026 Duniamu</p>
+  <button class="btn-claim" id="claimBtn" disabled>Klaim Reward</button>
+
+  <section class="claim-box" style="margin-top:32px">
+    <h2>Withdraw</h2>
+    <p>Saldo tersedia: <strong id="withdrawAvailable">Rp 0</strong></p>
+    <form id="withdrawForm" style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
+      <input id="wdAmount" type="number" min="1" placeholder="Jumlah (Rp)" required/>
+      <select id="wdMethod" required>
+        <option value="bank">Transfer Bank</option>
+        <option value="ewallet">E-Wallet</option>
+      </select>
+      <input id="wdName" type="text" placeholder="Nama pemilik rekening" required/>
+      <input id="wdNumber" type="text" placeholder="Nomor rekening / e-wallet" required/>
+      <button type="submit" class="btn-claim">Kirim Permintaan</button>
+    </form>
+    <h3 style="margin-top:18px;color:var(--gold)">Riwayat Withdraw</h3>
+    <div id="withdrawHistory"></div>
+  </section>
+
+  <p class="footer">2026 Duniamu</p>
 </main>
 
 <div class="toast" id="toast"></div>

@@ -60,3 +60,13 @@ h1{font-size:clamp(28px,5vw,48px);margin-bottom:14px;line-height:1.2;font-weight
 @media(max-width:600px){.navbar{padding:14px 20px}.brand-name{font-size:17px}
   .stats{grid-template-columns:1fr}.mission{flex-direction:column;align-items:flex-start;gap:12px}
   .btn-do{width:100%}}
+
+/* ==== TAMBAHAN: withdraw & klaim ==== */
+.claim-form{display:flex;flex-direction:column;gap:12px;margin:20px auto;max-width:500px}
+.claim-form input,.claim-form select{padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:14px}
+.withdraw-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.badge{padding:2px 8px;border-radius:6px;font-size:11px;text-transform:uppercase}
+.badge.pending{background:#f59e0b;color:#000}
+.badge.approved,.badge.paid{background:#22c55e;color:#000}
+.badge.rejected{background:#ff2d55;color:#fff}
+.muted{color:var(--muted);font-size:13px}
