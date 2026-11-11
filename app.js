@@ -1,4 +1,4 @@
-import { db, auth, storage } from './firebase-config.js';
+import { db, auth } from './firebase-config.js';
 import {
   doc, getDoc, collection, addDoc, serverTimestamp,
   query, where, onSnapshot
@@ -6,7 +6,6 @@ import {
 import {
   signOut, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 let CONFIG = { missions: [], slogan: "Selesaikan Misi, Hasilkan" };
 let USER = null;
@@ -14,64 +13,22 @@ let CLAIMS = [];
 let WITHDRAWALS = [];
 let activeMission = null;
 let selectedFile = null;
-let GROQ_API_KEY = null;
 
 const $ = id => document.getElementById(id);
 const fmt = n => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
 
-// === FUNGSI TOAST (Notifikasi) ===
+// === TOAST ===
 function toast(msg, isError = false) {
   const t = $('toast'); 
   if (!t) return alert(msg);
   t.textContent = msg;
-  if (isError) {
-    t.style.background = '#ef4444';
-    t.style.color = '#fff';
-  } else {
-    t.style.background = '#00e0ff';
-    t.style.color = '#000';
-  }
+  t.style.background = isError ? '#ef4444' : '#00e0ff';
+  t.style.color = isError ? '#fff' : '#000';
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3500);
 }
 
-// === FETCH TOKEN DARI VAULT ===
-async function fetchGroqToken() {
-  if (GROQ_API_KEY) return GROQ_API_KEY;
-  try {
-    const resp = await fetch('/groq-vault.html');
-    const text = await resp.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(text, 'text/html');
-    const metaData = doc.querySelector('meta[name="groq-vault"]');
-    const metaKey  = doc.querySelector('meta[name="groq-vault-key"]');
-
-    if (metaData && metaKey) {
-      const hex = metaData.getAttribute('content');
-      const key = metaKey.getAttribute('content');
-      GROQ_API_KEY = xorDecrypt(hex, key);
-    }
-  } catch (e) {
-    console.warn('Gagal load Groq token:', e.message);
-  }
-  return GROQ_API_KEY;
-}
-
-function xorDecrypt(hex, key) {
-  try {
-    const bytes = new Uint8Array(hex.match(/.{1,2}/g).map(h => parseInt(h, 16)));
-    const k = new TextEncoder().encode(key);
-    const out = new Uint8Array(bytes.length);
-    for (let i = 0; i < bytes.length; i++) {
-      out[i] = bytes[i] ^ k[i % k.length];
-    }
-    return new TextDecoder().decode(out);
-  } catch (e) {
-    return null;
-  }
-}
-
-// === TABS LOGIC ===
+// === TABS ===
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.onclick = () => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -103,15 +60,21 @@ window.handleLogout = async () => {
 };
 
 function renderUserBar(u) {
-  const bar = $('userBar'); if (!bar) return;
+  const bar = $('userBar'); 
+  if (!bar) return;
+  
   if (!u) {
+    // Tampilan jika belum login
     bar.innerHTML = '<a href="login.html" class="btn-login">Masuk</a>';
     return;
   }
+  
+  // Tampilan jika sudah login
   const initial = (u.displayName || u.email || 'U').charAt(0).toUpperCase();
   const avatar = u.photoURL 
     ? '<img src="' + u.photoURL + '" class="nav-avatar" alt="User"/>'
     : '<div class="nav-avatar-placeholder">' + initial + '</div>';
+    
   bar.innerHTML = 
     '<div class="nav-user">' +
       avatar +
@@ -124,7 +87,9 @@ async function loadConfig() {
   try {
     const snap = await getDoc(doc(db, "settings", "global"));
     if (snap.exists()) CONFIG = snap.data();
-  } catch (e) { console.warn('loadConfig:', e.message); }
+  } catch (e) { 
+    console.warn('loadConfig:', e.message); 
+  }
   renderAll();
 }
 
@@ -191,14 +156,13 @@ function renderAll() {
         el.className = 'mission-card' + (done ? ' done' : '');
         el.innerHTML =
           '<div class="mission-info">' +
-            '<div class="mission-title">' + m.title + '</div>' +
-            '<div class="mission-reward">+' + m.reward + ' Poin</div>' +
+            '<div class="mission-title">' + (m.title || 'Misi Tanpa Judul') + '</div>' +
+            '<div class="mission-reward">+' + (m.reward || 0) + ' Poin</div>' +
           '</div>' +
           '<button class="' + btnClass + '" ' + (done || !USER ? 'disabled' : '') + '>' +
             btnText +
           '</button>';
         
-        // PENTING: Menggunakan closure untuk menangkap objek 'm' dengan benar
         el.querySelector('button').onclick = () => handleMissionClick(m);
         listEl.appendChild(el);
       });
@@ -231,14 +195,9 @@ function renderWithdrawals() {
     ).join('');
 }
 
-// === KLIK MISI (FIX JUDUL KOSONG) ===
 function handleMissionClick(m) {
   if (!USER) return window.location.href = 'login.html';
-  
-  // Validasi objek misi
-  if (!m || !m.title) {
-    return toast('Data misi tidak valid. Hubungi admin.', true);
-  }
+  if (!m || !m.title) return toast('Data misi tidak valid.', true);
   
   if (m.link) window.open(m.link, '_blank');
   
@@ -271,25 +230,20 @@ window.handleFileSelect = (input) => {
   }
 };
 
-// === SUBMIT BUKTI & AI (FIX EMAIL VERIFIED) ===
 window.submitProof = async () => {
   if (!selectedFile || !activeMission) return;
   
-  // Validasi Email Verified (Penyebab Error Missing Permissions)
   if (!USER.emailVerified) {
     return toast('Verifikasi email Anda dulu di pengaturan Google/Email.', true);
   }
 
   const btn = $('btnSubmitProof');
   btn.disabled = true;
-  btn.textContent = 'Memuat Sistem AI...';
+  btn.textContent = 'Menyimpan data...';
   
   try {
-    const token = await fetchGroqToken();
-    if (!token) throw new Error("Sistem AI tidak merespon.");
-
-    btn.textContent = 'Menganalisis Gambar (AI)...';
-
+    // Karena fitur Storage mungkin belum aktif, kita simpan sebagai base64 dulu
+    // (Hanya untuk testing, atau upload ke Firebase Storage jika sudah aktif)
     const reader = new FileReader();
     const base64Promise = new Promise((resolve) => {
       reader.onload = (e) => resolve(e.target.result);
@@ -297,40 +251,6 @@ window.submitProof = async () => {
     });
     const base64Image = await base64Promise;
 
-    const prompt = 'Kamu adalah sistem verifikasi otomatis. User mengaku telah menyelesaikan misi: "' + activeMission.title + '". Periksa gambar ini. Apakah gambar ini adalah bukti valid bahwa user benar-benar menyelesaikan misi tersebut? Jawab HANYA dengan JSON: {"valid": true, "reason": "alasan singkat"} atau {"valid": false, "reason": "alasan"}.';
-
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "llama-3.2-11b-vision-preview",
-        messages: [{ role: "user", content: [
-          { type: "text", text: prompt },
-          { type: "image_url", image_url: { url: base64Image } }
-        ]}],
-        temperature: 0.1
-      })
-    });
-
-    if (!response.ok) {
-      const err = await response.text();
-      throw new Error("AI Error: " + err);
-    }
-
-    const aiData = await response.json();
-    let aiText = aiData.choices[0].message.content;
-    aiText = aiText.replace(/json/g, "").replace(/`/g, "").trim();
-    const aiResult = JSON.parse(aiText);
-
-    btn.textContent = 'Menyimpan data...';
-    const fileExt = selectedFile.name.split('.').pop();
-    const fileName = `proofs/${USER.uid}_${activeMission.id}_${Date.now()}.${fileExt}`;
-    const storageRef = ref(storage, fileName);
-    await uploadBytes(storageRef, selectedFile);
-    const downloadURL = await getDownloadURL(storageRef);
-
-    const finalStatus = aiResult.valid ? "approved" : "rejected";
-    
     await addDoc(collection(db, "claims"), {
       userId: USER.uid,
       userEmail: USER.email,
@@ -338,17 +258,13 @@ window.submitProof = async () => {
       missionId: activeMission.id,
       missionTitle: activeMission.title,
       reward: Number(activeMission.reward),
-      proofUrl: downloadURL,
-      status: finalStatus,
-      aiReason: aiResult.reason || "Tidak ada alasan",
+      proofUrl: base64Image, // Simpan sementara sebagai base64
+      status: "pending",
+      aiReason: "Menunggu review admin",
       createdAt: serverTimestamp()
     });
 
-    if (aiResult.valid) {
-      toast('AI memverifikasi! Poin ditambahkan.');
-    } else {
-      toast('AI menolak: ' + aiResult.reason, true);
-    }
+    toast('Bukti terkirim! Menunggu review admin.');
     closeUploadModal();
   } catch (e) {
     toast('Gagal: ' + e.message, true);
@@ -358,10 +274,7 @@ window.submitProof = async () => {
   }
 };
 
-// === WITHDRAW FORM ===
 document.addEventListener('DOMContentLoaded', () => {
-  fetchGroqToken(); 
-
   if ($('withdrawForm')) $('withdrawForm').onsubmit = async (ev) => {
     ev.preventDefault();
     if (!USER) return window.location.href = 'login.html';

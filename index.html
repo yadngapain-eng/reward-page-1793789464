@@ -17,6 +17,7 @@
       <div class="brand-tag">Selesaikan Misi, Hasilkan</div>
     </div>
   </div>
+  <!-- ID userBar ini yang menampilkan tombol Masuk/Profil -->
   <div class="user-nav" id="userBar"></div>
 </header>
 
@@ -46,7 +47,7 @@
     <button class="tab-btn" data-target="panel-withdraw">Withdraw</button>
   </div>
 
-  <!-- PANEL MISI (Form Klaim sudah dihapus total) -->
+  <!-- PANEL MISI -->
   <section class="panel active" id="panel-missions">
     <div class="panel-header">
       <h2>Misi Tersedia</h2>
@@ -89,6 +90,26 @@
     <h3 style="margin-top:24px;margin-bottom:12px;color:var(--muted);font-size:14px;text-transform:uppercase">Riwayat Penarikan</h3>
     <div id="withdrawHistory" class="history-list"></div>
   </section>
+
+  <!-- MODAL UPLOAD BUKTI -->
+  <div id="uploadModal" class="modal-overlay" style="display:none">
+    <div class="modal-box">
+      <h3 id="modalTitle">Upload Bukti</h3>
+      <p class="muted" style="margin-bottom:16px">Pilih screenshot yang membuktikan kamu sudah menyelesaikan misi.</p>
+      
+      <input type="file" id="proofFile" accept="image/*" style="display:none" onchange="handleFileSelect(this)"/>
+      
+      <div id="uploadPreview" class="upload-preview" onclick="document.getElementById('proofFile').click()">
+        <div id="previewText">Klik di sini untuk pilih gambar</div>
+        <img id="previewImg" style="display:none" />
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeUploadModal()">Batal</button>
+        <button class="btn-primary" id="btnSubmitProof" onclick="submitProof()" disabled>Kirim Bukti</button>
+      </div>
+    </div>
+  </div>
 
   <p class="footer">© 2026 Duniamu. All rights reserved.</p>
 </main>
