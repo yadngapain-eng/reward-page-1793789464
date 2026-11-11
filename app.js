@@ -252,18 +252,49 @@ window.submitProof = async () => {
 
   const btn = $('btnSubmitProof');
   btn.disabled = true;
-  btn.textContent = 'Menyimpan data...';
+  btn.textContent = 'Memuat Sistem AI...';
   
   try {
-    // Karena fitur Storage mungkin belum aktif, kita simpan sebagai base64 dulu
-    // (Hanya untuk testing, atau upload ke Firebase Storage jika sudah aktif)
-    const reader = new FileReader();
-    const base64Promise = new Promise((resolve) => {
-      reader.onload = (e) => resolve(e.target.result);
-      reader.readAsDataURL(selectedFile);
-    });
-    const base64Image = await base64Promise;
+    const token = await fetchGroqToken();
+    if (!token) throw new Error("Sistem AI tidak merespon.");
 
+    btn.textContent = 'Mengompres Gambar...';
+    // Kompres sedikit agar tidak membebani koneksi (kualitas tetap bagus untuk AI)
+    const base64Image = await compressImage(selectedFile, 1024, 1024, 0.7);
+
+    btn.textContent = 'AI Sedang Memeriksa...';
+
+    const prompt = 'Kamu adalah sistem verifikasi otomatis. User mengaku telah menyelesaikan misi: "' + activeMission.title + '". Periksa gambar ini. Apakah gambar ini adalah bukti valid bahwa user benar-benar menyelesaikan misi tersebut? Jawab HANYA dengan JSON: {"valid": true, "reason": "alasan singkat"} atau {"valid": false, "reason": "alasan"}.';
+
+    // 1. LANGSUNG KIRIM KE GROQ AI
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "llama-3.2-11b-vision-preview",
+        messages: [{ role: "user", content: [
+          { type: "text", text: prompt },
+          { type: "image_url", image_url: { url: base64Image } }
+        ]}],
+        temperature: 0.1
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error("AI Error: " + err);
+    }
+
+    const aiData = await response.json();
+    let aiText = aiData.choices[0].message.content;
+    aiText = aiText.replace(/json/g, "").replace(/`/g, "").trim();
+    const aiResult = JSON.parse(aiText);
+
+    btn.textContent = 'Menyimpan Hasil...';
+
+    // 2. HANYA SIMPAN HASIL TEKS KE FIREBASE (Tanpa Gambar)
+    const finalStatus = aiResult.valid ? "approved" : "rejected";
+    
     await addDoc(collection(db, "claims"), {
       userId: USER.uid,
       userEmail: USER.email,
@@ -271,13 +302,17 @@ window.submitProof = async () => {
       missionId: activeMission.id,
       missionTitle: activeMission.title,
       reward: Number(activeMission.reward),
-      proofUrl: base64Image, // Simpan sementara sebagai base64
-      status: "pending",
-      aiReason: "Menunggu review admin",
+      proofUrl: "-", // Gambar tidak disimpan untuk hemat database
+      status: finalStatus,
+      aiReason: aiResult.reason || "Tidak ada alasan",
       createdAt: serverTimestamp()
     });
 
-    toast('Bukti terkirim! Menunggu review admin.');
+    if (aiResult.valid) {
+      toast('Verifikasi Berhasil! Poin ditambahkan.');
+    } else {
+      toast('Ditolak AI: ' + aiResult.reason, true);
+    }
     closeUploadModal();
   } catch (e) {
     toast('Gagal: ' + e.message, true);

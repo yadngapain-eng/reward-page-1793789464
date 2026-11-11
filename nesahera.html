@@ -335,7 +335,7 @@ function listenClaims() {
         '<td>' + (c.userEmail || c.userName || '-') + '</td>' +
         '<td>' + (c.missionTitle || '-') + '</td>' +
         '<td>' + (c.reward || 0) + '</td>' +
-        '<td>' + (c.proofUrl ? '<a href="' + c.proofUrl + '" target="_blank"><img src="' + c.proofUrl + '" class="img-proof"/></a>' : '-') + '</td>' +
+        '<td>' + (c.proofUrl && c.proofUrl !== '-' ? '<a href="' + c.proofUrl + '" target="_blank"><img src="' + c.proofUrl + '" class="img-proof"/></a>' : '<span style="font-size:12px;color:#7d8ba3">Tidak disimpan</span>') + '</td>' +
         '<td><span class="badge ' + c.status + '">' + c.status + '</span><br/><small style="color:#7d8ba3">' + (c.aiReason || '') + '</small></td>' +
         '<td>' +
           '<button class="btn-sm btn-ok" onclick="markClaim(\'' + d.id + '\',\'approved\')">Setujui</button>' +
