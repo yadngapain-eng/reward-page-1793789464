@@ -13,7 +13,7 @@ let CLAIMS = [];
 let WITHDRAWALS = [];
 let activeMission = null;
 let selectedFile = null;
-let GROQ_API_KEY = null;
+// GROQ_API_KEY dihapus
 
 const $ = id => document.getElementById(id);
 const fmt = n => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
@@ -29,7 +29,6 @@ function toast(msg, isError = false) {
   setTimeout(() => t.classList.remove('show'), 3500);
 }
 
-// === FETCH TOKEN GROQ ===
 
 
 // === FUNGSI KOMPRES GAMBAR (MENGHINDARI LIMIT 1MB) ===
@@ -327,7 +326,7 @@ window.submitProof = async () => {
 
 // === WITHDRAW FORM ===
 document.addEventListener('DOMContentLoaded', () => {
-  fetchGroqToken(); 
+  // Token Groq dihapus 
 
   if ($('withdrawForm')) $('withdrawForm').onsubmit = async (ev) => {
     ev.preventDefault();
