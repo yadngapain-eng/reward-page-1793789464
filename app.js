@@ -306,11 +306,30 @@ window.submitProof = async () => {
 
     const prompt = 'Kamu adalah sistem verifikasi otomatis. User mengaku telah menyelesaikan misi: "' + activeMission.title + '". Periksa gambar ini. Apakah gambar ini adalah bukti valid bahwa user benar-benar menyelesaikan misi tersebut? Jawab HANYA dengan JSON: {"valid": true, "reason": "alasan singkat"} atau {"valid": false, "reason": "alasan"}.';
 
+    // 1. Minta Groq untuk memberikan daftar model yang tersedia
+    btn.textContent = 'Mencari Model AI...';
+    const modelReq = await fetch("https://api.groq.com/openai/v1/models", {
+      headers: { "Authorization": "Bearer " + token }
+    });
+    const modelData = await modelReq.json();
+    
+    // 2. Cari model yang ada kata "vision" (karena kita butuh AI untuk baca gambar)
+    let targetModel = "llama-3.2-90b-vision-preview"; // Default cadangan
+    if (modelData && modelData.data) {
+      const visionModels = modelData.data.filter(m => m.id.includes('vision'));
+      if (visionModels.length > 0) {
+        targetModel = visionModels[0].id; // Gunakan model vision pertama yang ditemukan
+        console.log("Menggunakan model Groq:", targetModel);
+      }
+    }
+
+    // 3. Kirim gambar menggunakan model yang baru ditemukan
+    btn.textContent = 'Menganalisis Gambar (AI)...';
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "llama-3.2-11b-vision-instruct",
+        model: targetModel,
         messages: [{ role: "user", content: [
           { type: "text", text: prompt },
           { type: "image_url", image_url: { url: base64Image } }
