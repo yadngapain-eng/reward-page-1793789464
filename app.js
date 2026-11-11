@@ -154,16 +154,20 @@ function renderAll() {
 
         const el = document.createElement('div');
         el.className = 'mission-card' + (done ? ' done' : '');
+        // Deteksi judul otomatis (title, judul, atau name)
+        const mTitle = m.title || m.judul || m.name || 'Misi Tanpa Judul';
+        const mReward = m.reward || m.poin || 0;
+        
         el.innerHTML =
           '<div class="mission-info">' +
-            '<div class="mission-title">' + (m.title || 'Misi Tanpa Judul') + '</div>' +
-            '<div class="mission-reward">+' + (m.reward || 0) + ' Poin</div>' +
+            '<div class="mission-title">' + mTitle + '</div>' +
+            '<div class="mission-reward">+' + mReward + ' Poin</div>' +
           '</div>' +
           '<button class="' + btnClass + '" ' + (done || !USER ? 'disabled' : '') + '>' +
             btnText +
           '</button>';
         
-        el.querySelector('button').onclick = () => handleMissionClick(m);
+        el.querySelector('button').onclick = () => handleMissionClick({...m, title: mTitle, reward: mReward});
         listEl.appendChild(el);
       });
     }
