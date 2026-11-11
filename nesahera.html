@@ -17,18 +17,21 @@ button:disabled{opacity:.5;cursor:not-allowed}
 #app{display:none;width:100%;max-width:900px;margin:0 auto}
 .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
 .tabs{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
-.tab{padding:10px 20px;background:#121a2b;color:#fff;border:1px solid #1f2a44;border-radius:8px;cursor:pointer}
+.tab{padding:10px 20px;background:#121a2b;color:#fff;border:1px solid #1f2a44;border-radius:8px;cursor:pointer;font-size:14px}
 .tab.active{background:#00e0ff;color:#000;font-weight:bold}
 .panel{display:none;background:#121a2b;border:1px solid #1f2a44;border-radius:12px;padding:20px}
 .panel.active{display:block}
-.item{display:flex;gap:10px;margin-bottom:10px;background:#0a0e1a;padding:12px;border-radius:8px;flex-wrap:wrap;align-items:center}
-.item-input{display:flex;flex-direction:column;gap:4px;flex:1;min-width:120px}
-.item-input label{font-size:10px;color:#7d8ba3;text-transform:uppercase;font-weight:700}
-.item input{width:100%;padding:8px;border-radius:6px;border:1px solid #1f2a44;background:#0a0e1a;color:#fff}
-.btn-danger{background:#ef4444;color:#fff;width:auto;padding:8px 12px}
-.btn-ok{background:#22c55e;color:#fff;width:auto;padding:8px 12px}
-table{width:100%;border-collapse:collapse;margin-top:15px}
-th,td{border-bottom:1px solid #1f2a44;padding:10px;text-align:left;font-size:14px}
+/* CSS Form Tambah Misi */
+.form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.form-group label{font-size:12px;color:#7d8ba3;font-weight:700;text-transform:uppercase}
+.form-group input{padding:12px;border-radius:8px;border:1px solid #1f2a44;background:#0a0e1a;color:#fff;font-size:14px;width:100%}
+/* CSS Daftar Misi (Tabel) */
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{border-bottom:1px solid #1f2a44;padding:12px 10px;text-align:left;font-size:14px}
+th{color:#7d8ba3;font-size:12px;text-transform:uppercase}
+.btn-sm{padding:6px 12px;width:auto;font-size:12px;border-radius:6px}
+.btn-danger{background:#ef4444;color:#fff}
+.btn-ok{background:#22c55e;color:#fff}
 .badge{padding:2px 8px;border-radius:6px;font-size:11px;text-transform:uppercase}
 .badge.pending{background:#f59e0b;color:#000}
 .badge.approved,.badge.paid{background:#22c55e;color:#000}
@@ -58,19 +61,40 @@ th,td{border-bottom:1px solid #1f2a44;padding:10px;text-align:left;font-size:14p
   </div>
   
   <div class="tabs">
-    <div class="tab active" data-tab="missions">Misi</div>
+    <div class="tab active" data-tab="list-missions">Daftar Misi</div>
+    <div class="tab" data-tab="add-mission">+ Tambah Misi</div>
     <div class="tab" data-tab="payments">Metode Withdraw</div>
     <div class="tab" data-tab="claims">Klaim User</div>
     <div class="tab" data-tab="withdrawals">Withdraw</div>
   </div>
 
-  <div class="panel active" id="panel-missions">
-    <h2>Daftar Misi</h2>
-    <div id="missionList"></div>
-    <button onclick="addMission()" style="margin-bottom:20px;width:auto;margin-top:10px">+ Tambah Misi Baru</button>
-    <button id="btnSaveMissions" onclick="saveMissions()" style="background:#22c55e;color:#fff;width:auto">Simpan ke Firebase</button>
+  <!-- TAB 1: DAFTAR MISI (EDIT & HAPUS) -->
+  <div class="panel active" id="panel-list-missions">
+    <h2>Daftar Misi Aktif</h2>
+    <p class="sub" style="margin-bottom:15px">Edit data di bawah lalu klik "Simpan Perubahan".</p>
+    <div id="missionListWrap"></div>
+    <button id="btnSaveMissions" onclick="saveEditedMissions()" style="background:#22c55e;color:#fff;margin-top:20px">Simpan Perubahan</button>
   </div>
 
+  <!-- TAB 2: TAMBAH MISI BARU -->
+  <div class="panel" id="panel-add-mission">
+    <h2>Tambah Misi Baru</h2>
+    <div class="form-group">
+      <label>Judul Misi</label>
+      <input id="newMissionTitle" type="text" placeholder="Contoh: Follow Instagram @duniamu"/>
+    </div>
+    <div class="form-group">
+      <label>Reward (Poin)</label>
+      <input id="newMissionReward" type="number" value="10" placeholder="10"/>
+    </div>
+    <div class="form-group">
+      <label>Link Tujuan (Opsional)</label>
+      <input id="newMissionLink" type="text" placeholder="https://instagram.com/..."/>
+    </div>
+    <button onclick="submitNewMission()" style="background:#00e0ff;color:#000;margin-top:10px">Simpan Misi Baru</button>
+  </div>
+
+  <!-- TAB 3: METODE WITHDRAW -->
   <div class="panel" id="panel-payments">
     <h2>Metode Withdraw</h2>
     <div id="paymentList"></div>
@@ -78,11 +102,13 @@ th,td{border-bottom:1px solid #1f2a44;padding:10px;text-align:left;font-size:14p
     <button id="btnSavePayments" onclick="savePayments()" style="background:#22c55e;color:#fff;width:auto">Simpan ke Firebase</button>
   </div>
 
+  <!-- TAB 4: KLAIM USER -->
   <div class="panel" id="panel-claims">
     <h2>Daftar Klaim</h2>
     <div id="claimsWrap"></div>
   </div>
 
+  <!-- TAB 5: WITHDRAW -->
   <div class="panel" id="panel-withdrawals">
     <h2>Permintaan Withdraw</h2>
     <div id="withdrawalsWrap"></div>
@@ -166,83 +192,123 @@ document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
   document.getElementById('panel-' + t.dataset.tab).classList.add('active');
 });
 
-// === LOAD DATA (KUNCI UTAMA PERBAIKAN) ===
+// === LOAD DATA ===
 async function loadDataFromFirebase() {
   try {
     const snap = await getDoc(doc(db, "settings", "global"));
     if (snap.exists()) {
       const data = snap.data();
-      // Pastikan array missions dan payments ada
       CONFIG.missions = Array.isArray(data.missions) ? data.missions : [];
       CONFIG.payments = Array.isArray(data.payments) ? data.payments : [];
     } else {
       CONFIG.missions = [];
       CONFIG.payments = [];
     }
-    renderAll();
+    renderMissionsTable();
+    renderPayments();
   } catch (e) {
     showToast('Gagal memuat data: ' + e.message, true);
   }
 }
 
-// === RENDER FORM ===
-function renderAll() {
-  const mWrap = $('missionList'); mWrap.innerHTML = '';
+// === RENDER TABEL MISI ===
+function renderMissionsTable() {
+  const mWrap = $('missionListWrap'); 
   
   if (CONFIG.missions.length === 0) {
-    mWrap.innerHTML = '<p style="color:#7d8ba3;margin-bottom:10px;">Belum ada misi di database. Silakan tambah misi baru.</p>';
-  } else {
-    CONFIG.missions.forEach((m, i) => {
-      const el = document.createElement('div'); el.className = 'item';
-      el.innerHTML =
-        '<div class="item-input"><label>Judul Misi</label><input value="' + (m.title||'').replace(/"/g,'&quot;') + '" onchange="updateMission(' + i + ', \'title\', this.value)" placeholder="Contoh: Follow IG"/></div>' +
-        '<div class="item-input" style="flex:0 0 80px"><label>Poin</label><input type="number" value="' + (m.reward||0) + '" onchange="updateMission(' + i + ', \'reward\', +this.value)"/></div>' +
-        '<div class="item-input"><label>Link Tujuan</label><input value="' + (m.link||'').replace(/"/g,'&quot;') + '" onchange="updateMission(' + i + ', \'link\', this.value)" placeholder="https://..."/></div>' +
-        '<button class="btn-danger" style="align-self:flex-end" onclick="hapusMisi(' + i + ')">Hapus</button>';
-      mWrap.appendChild(el);
-    });
+    mWrap.innerHTML = '<p style="color:#7d8ba3;">Belum ada misi di database. Silakan ke tab "+ Tambah Misi".</p>';
+    return;
   }
 
+  let html = '<table><thead><tr><th>Judul Misi</th><th>Poin</th><th>Link</th><th>Aksi</th></tr></thead><tbody>';
+  CONFIG.missions.forEach((m, i) => {
+    html += `
+      <tr>
+        <td><input type="text" value="${(m.title||'').replace(/"/g,'&quot;')}" onchange="updateMission(${i}, 'title', this.value)" style="padding:8px;border-radius:6px;border:1px solid #1f2a44;background:#0a0e1a;color:#fff;width:100%"/></td>
+        <td><input type="number" value="${m.reward||0}" onchange="updateMission(${i}, 'reward', +this.value)" style="padding:8px;border-radius:6px;border:1px solid #1f2a44;background:#0a0e1a;color:#fff;width:70px"/></td>
+        <td><input type="text" value="${(m.link||'').replace(/"/g,'&quot;')}" onchange="updateMission(${i}, 'link', this.value)" placeholder="https://..." style="padding:8px;border-radius:6px;border:1px solid #1f2a44;background:#0a0e1a;color:#fff;width:100%"/></td>
+        <td><button class="btn-sm btn-danger" onclick="hapusMisi(${i})">Hapus</button></td>
+      </tr>
+    `;
+  });
+  html += '</tbody></table>';
+  mWrap.innerHTML = html;
+}
+
+// === FUNGSI EDIT & HAPUS MISI ===
+window.updateMission = (i, key, val) => { CONFIG.missions[i][key] = val; };
+window.hapusMisi = (i) => { 
+  if(confirm('Hapus misi ini?')) {
+    CONFIG.missions.splice(i, 1); 
+    renderMissionsTable(); 
+  }
+};
+
+// === SIMPAN PERUBAHAN MISI ===
+window.saveEditedMissions = async () => {
+  const btn = $('btnSaveMissions');
+  btn.disabled = true; btn.textContent = 'Menyimpan...';
+  try {
+    await setDoc(doc(db, "settings", "global"), { missions: CONFIG.missions }, { merge: true });
+    showToast('Perubahan misi berhasil disimpan!', false);
+  } catch (e) {
+    showToast('Gagal menyimpan: ' + e.message, true);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Simpan Perubahan';
+  }
+};
+
+// === TAMBAH MISI BARU ===
+window.submitNewMission = async () => {
+  const title = $('newMissionTitle').value.trim();
+  const reward = Number($('newMissionReward').value);
+  const link = $('newMissionLink').value.trim();
+  
+  if (!title || !reward) return showToast('Judul dan Poin wajib diisi!', true);
+
+  const newMission = { id: Date.now(), title, reward, link };
+  CONFIG.missions.push(newMission);
+  
+  try {
+    await setDoc(doc(db, "settings", "global"), { missions: CONFIG.missions }, { merge: true });
+    showToast('Misi baru berhasil ditambahkan!', false);
+    
+    // Reset form
+    $('newMissionTitle').value = '';
+    $('newMissionReward').value = '10';
+    $('newMissionLink').value = '';
+    
+    // Update tabel di tab sebelah
+    renderMissionsTable();
+    
+    // Pindah ke tab daftar misi
+    document.querySelector('.tab[data-tab="list-missions"]').click();
+  } catch (e) {
+    showToast('Gagal menambahkan misi: ' + e.message, true);
+  }
+};
+
+
+// === RENDER & FUNGSI METODE WITHDRAW (Tetap sama) ===
+function renderPayments() {
   const pWrap = $('paymentList'); pWrap.innerHTML = '';
   if (CONFIG.payments.length === 0) {
     pWrap.innerHTML = '<p style="color:#7d8ba3;margin-bottom:10px;">Belum ada metode pembayaran.</p>';
   } else {
     CONFIG.payments.forEach((p, i) => {
-      const el = document.createElement('div'); el.className = 'item';
+      const el = document.createElement('div'); 
+      el.style = "display:flex;gap:10px;margin-bottom:10px;background:#0a0e1a;padding:12px;border-radius:8px;flex-wrap:wrap;align-items:center";
       el.innerHTML =
-        '<div class="item-input"><label>Nama Metode</label><input value="' + (p.name||'').replace(/"/g,'&quot;') + '" onchange="updatePayment(' + i + ', \'name\', this.value)" placeholder="DANA/OVO"/></div>' +
-        '<div class="item-input"><label>Atas Nama</label><input value="' + (p.holder||'').replace(/"/g,'&quot;') + '" onchange="updatePayment(' + i + ', \'holder\', this.value)" placeholder="Nama Pemilik"/></div>' +
-        '<div class="item-input" style="flex:0 0 80px"><label>Aktif</label><input type="checkbox" ' + (p.active?'checked':'') + ' onchange="updatePayment(' + i + ', \'active\', this.checked)"/></div>' +
-        '<button class="btn-danger" style="align-self:flex-end" onclick="hapusPayment(' + i + ')">Hapus</button>';
+        '<input value="' + (p.name||'').replace(/"/g,'&quot;') + '" onchange="CONFIG.payments[' + i + '].name=this.value" placeholder="Nama (DANA/OVO)" style="flex:1;min-width:100px;padding:8px;border-radius:6px;border:1px solid #1f2a44;background:#0a0e1a;color:#fff"/>' +
+        '<input value="' + (p.holder||'').replace(/"/g,'&quot;') + '" onchange="CONFIG.payments[' + i + '].holder=this.value" placeholder="Atas Nama" style="flex:1;min-width:100px;padding:8px;border-radius:6px;border:1px solid #1f2a44;background:#0a0e1a;color:#fff"/>' +
+        '<label style="display:flex;align-items:center;gap:5px;color:#fff"><input type="checkbox" ' + (p.active?'checked':'') + ' onchange="CONFIG.payments[' + i + '].active=this.checked"/> Aktif</label>' +
+        '<button class="btn-sm btn-danger" onclick="CONFIG.payments.splice(' + i + ',1);renderPayments()">Hapus</button>';
       pWrap.appendChild(el);
     });
   }
 }
 
-// === FUNGSI EDIT & HAPUS MISI (Mencegah input ter-reset saat mengetik) ===
-window.updateMission = (i, key, val) => { CONFIG.missions[i][key] = val; };
-window.hapusMisi = (i) => { CONFIG.missions.splice(i, 1); renderAll(); };
-window.addMission = () => { CONFIG.missions.push({ id: Date.now(), title: '', reward: 10, link: '' }); renderAll(); };
-
-window.updatePayment = (i, key, val) => { CONFIG.payments[i][key] = val; };
-window.hapusPayment = (i) => { CONFIG.payments.splice(i, 1); renderAll(); };
-window.addPayment = () => { CONFIG.payments.push({ id: Date.now(), name: '', holder: '', active: true }); renderAll(); };
-
-// === SIMPAN ===
-window.saveMissions = async () => {
-  const btn = $('btnSaveMissions');
-  btn.disabled = true; btn.textContent = 'Menyimpan...';
-  try {
-    // Simpan tepat sebagai array `missions`
-    await setDoc(doc(db, "settings", "global"), { missions: CONFIG.missions }, { merge: true });
-    showToast('Misi berhasil disimpan ke Firebase!', false);
-  } catch (e) {
-    showToast('Gagal menyimpan: ' + e.message, true);
-  } finally {
-    btn.disabled = false; btn.textContent = 'Simpan ke Firebase';
-  }
-};
-
+window.addPayment = () => { CONFIG.payments.push({ id: Date.now(), name: '', holder: '', active: true }); renderPayments(); };
 window.savePayments = async () => {
   const btn = $('btnSavePayments');
   btn.disabled = true; btn.textContent = 'Menyimpan...';
@@ -272,8 +338,8 @@ function listenClaims() {
         '<td>' + (c.proofUrl ? '<a href="' + c.proofUrl + '" target="_blank"><img src="' + c.proofUrl + '" class="img-proof"/></a>' : '-') + '</td>' +
         '<td><span class="badge ' + c.status + '">' + c.status + '</span><br/><small style="color:#7d8ba3">' + (c.aiReason || '') + '</small></td>' +
         '<td>' +
-          '<button class="btn-ok" onclick="markClaim(\'' + d.id + '\',\'approved\')">Setujui</button>' +
-          '<button class="btn-danger" onclick="markClaim(\'' + d.id + '\',\'rejected\')">Tolak</button>' +
+          '<button class="btn-sm btn-ok" onclick="markClaim(\'' + d.id + '\',\'approved\')">Setujui</button>' +
+          '<button class="btn-sm btn-danger" onclick="markClaim(\'' + d.id + '\',\'rejected\')">Tolak</button>' +
         '</td></tr>';
     });
     wrap.innerHTML = html + '</table>';
@@ -300,8 +366,8 @@ function listenWithdrawals() {
         '<td>' + (w.accountName||'') + ' - ' + (w.accountNumber||'') + '</td>' +
         '<td><span class="badge ' + w.status + '">' + w.status + '</span></td>' +
         '<td>' +
-          '<button class="btn-ok" onclick="markWd(\'' + d.id + '\',\'paid\')">Bayar</button>' +
-          '<button class="btn-danger" onclick="markWd(\'' + d.id + '\',\'rejected\')">Tolak</button>' +
+          '<button class="btn-sm btn-ok" onclick="markWd(\'' + d.id + '\',\'paid\')">Bayar</button>' +
+          '<button class="btn-sm btn-danger" onclick="markWd(\'' + d.id + '\',\'rejected\')">Tolak</button>' +
         '</td></tr>';
     });
     wrap.innerHTML = html + '</table>';
