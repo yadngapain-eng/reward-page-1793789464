@@ -4,11 +4,8 @@ export default {
 
     if (url.pathname === "/api/verify" && request.method === "POST") {
       try {
-        // Cek apakah binding AI benar-benar ada di environment Cloudflare
         if (!env.AI) {
-          return new Response(JSON.stringify({ 
-            error: "Binding AI tidak ditemukan. Harap hubungkan Workers AI di dashboard Cloudflare." 
-          }), { status: 500, headers: { "Content-Type": "application/json" } });
+          return new Response(JSON.stringify({ error: "Binding AI tidak ditemukan di server." }), { status: 500, headers: { "Content-Type": "application/json" } });
         }
 
         const body = await request.json();
@@ -20,14 +17,9 @@ export default {
 
         const prompt = 'Kamu adalah sistem verifikasi otomatis. User mengaku telah menyelesaikan misi: "' + missionTitle + '". Periksa gambar ini. Apakah gambar ini adalah bukti valid bahwa user benar-benar menyelesaikan misi tersebut? Jawab HANYA dengan format JSON: {"valid": true, "reason": "alasan singkat"} atau {"valid": false, "reason": "alasan"}.';
 
-        // Panggil AI
         const aiResponse = await env.AI.run(
           "@cf/llava-hf/llava-1.5-7b-hf", 
-          {
-            image: imageBase64, 
-            prompt: prompt,
-            max_tokens: 256
-          }
+          { image: imageBase64, prompt: prompt, max_tokens: 256 }
         );
 
         let aiText = aiResponse.description || "";
@@ -40,9 +32,7 @@ export default {
           result.reason = aiText.substring(0, 100);
         }
 
-        return new Response(JSON.stringify(result), {
-          headers: { "Content-Type": "application/json" }
-        });
+        return new Response(JSON.stringify(result), { headers: { "Content-Type": "application/json" } });
 
       } catch (error) {
         return new Response(JSON.stringify({ error: "AI Error: " + error.message }), { status: 500, headers: { "Content-Type": "application/json" } });
