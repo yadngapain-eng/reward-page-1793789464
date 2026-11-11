@@ -29,7 +29,7 @@ function toast(msg, isError = false) {
   setTimeout(() => t.classList.remove('show'), 3500);
 }
 
-// === FETCH & DECRYPT TOKEN DARI VAULT (Yang Sempat Hilang) ===
+// === FETCH TOKEN GROQ ===
 async function fetchGroqToken() {
   if (GROQ_API_KEY) return GROQ_API_KEY;
   try {
@@ -65,6 +65,28 @@ function xorDecrypt(hex, key) {
   }
 }
 
+// === FUNGSI KOMPRES GAMBAR (MENGHINDARI LIMIT 1MB) ===
+function compressImage(file, maxWidth = 800) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const scale = maxWidth / img.width;
+        canvas.width = maxWidth;
+        canvas.height = img.height * scale;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        // Kualitas 0.7 (70%) agar ukuran file turun drastis di bawah 1MB
+        resolve(canvas.toDataURL('image/jpeg', 0.7));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 // === TABS ===
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.onclick = () => {
@@ -97,19 +119,15 @@ window.handleLogout = async () => {
 };
 
 function renderUserBar(u) {
-  const bar = $('userBar'); 
-  if (!bar) return;
-  
+  const bar = $('userBar'); if (!bar) return;
   if (!u) {
     bar.innerHTML = '<a href="login.html" class="btn-login">Masuk</a>';
     return;
   }
-  
   const initial = (u.displayName || u.email || 'U').charAt(0).toUpperCase();
   const avatar = u.photoURL 
     ? '<img src="' + u.photoURL + '" class="nav-avatar" alt="User"/>'
     : '<div class="nav-avatar-placeholder">' + initial + '</div>';
-    
   bar.innerHTML = 
     '<div class="nav-user">' +
       avatar +
@@ -122,9 +140,7 @@ async function loadConfig() {
   try {
     const snap = await getDoc(doc(db, "settings", "global"));
     if (snap.exists()) CONFIG = snap.data();
-  } catch (e) { 
-    console.warn('loadConfig:', e.message); 
-  }
+  } catch (e) { console.warn('loadConfig:', e.message); }
   renderAll();
 }
 
@@ -234,13 +250,11 @@ function renderWithdrawals() {
     ).join('');
 }
 
-// === KLIK MISI (ANTI REFRESH) ===
 function handleMissionClick(m) {
   if (!USER) return window.location.href = 'login.html';
   if (!m || !m.title) return toast('Data misi tidak valid.', true);
   
   if (m.link) {
-    // Buka link tanpa me-refresh halaman
     const a = document.createElement('a');
     a.href = m.link;
     a.target = '_blank';
@@ -279,7 +293,7 @@ window.handleFileSelect = (input) => {
   }
 };
 
-// === SUBMIT BUKTI (GROQ AI) ===
+// === SUBMIT BUKTI ===
 window.submitProof = async () => {
   if (!selectedFile || !activeMission) return;
   
@@ -289,50 +303,29 @@ window.submitProof = async () => {
 
   const btn = $('btnSubmitProof');
   btn.disabled = true;
-  btn.textContent = 'Memuat Sistem AI...';
+  btn.textContent = 'Mengompres Gambar...';
   
   try {
+    // 1. Kompres Gambar (Anti Limit 1MB)
+    const compressedBase64 = await compressImage(selectedFile, 800);
+    
+    btn.textContent = 'Memuat Token AI...';
     const token = await fetchGroqToken();
     if (!token) throw new Error("Sistem AI tidak merespon.");
 
     btn.textContent = 'Menganalisis Gambar (AI)...';
 
-    const reader = new FileReader();
-    const base64Promise = new Promise((resolve) => {
-      reader.onload = (e) => resolve(e.target.result);
-      reader.readAsDataURL(selectedFile);
-    });
-    const base64Image = await base64Promise;
-
     const prompt = 'Kamu adalah sistem verifikasi otomatis. User mengaku telah menyelesaikan misi: "' + activeMission.title + '". Periksa gambar ini. Apakah gambar ini adalah bukti valid bahwa user benar-benar menyelesaikan misi tersebut? Jawab HANYA dengan JSON: {"valid": true, "reason": "alasan singkat"} atau {"valid": false, "reason": "alasan"}.';
 
-    // 1. Minta Groq untuk memberikan daftar model yang tersedia
-    btn.textContent = 'Mencari Model AI...';
-    const modelReq = await fetch("https://api.groq.com/openai/v1/models", {
-      headers: { "Authorization": "Bearer " + token }
-    });
-    const modelData = await modelReq.json();
-    
-    // 2. Cari model yang ada kata "vision" (karena kita butuh AI untuk baca gambar)
-    let targetModel = "llama-3.2-90b-vision-preview"; // Default cadangan
-    if (modelData && modelData.data) {
-      const visionModels = modelData.data.filter(m => m.id.includes('vision'));
-      if (visionModels.length > 0) {
-        targetModel = visionModels[0].id; // Gunakan model vision pertama yang ditemukan
-        console.log("Menggunakan model Groq:", targetModel);
-      }
-    }
-
-    // 3. Kirim gambar menggunakan model yang baru ditemukan
-    btn.textContent = 'Menganalisis Gambar (AI)...';
+    // 2. Paksa pakai model 'instruct' yang saat ini aktif
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: targetModel,
+        model: "llama-3.2-11b-vision-instruct", // <-- Model aktif terbaru
         messages: [{ role: "user", content: [
           { type: "text", text: prompt },
-          { type: "image_url", image_url: { url: base64Image } }
+          { type: "image_url", image_url: { url: compressedBase64 } }
         ]}],
         temperature: 0.1
       })
@@ -346,20 +339,15 @@ window.submitProof = async () => {
     const aiData = await response.json();
     let aiText = aiData.choices[0].message.content;
     
-    // Ekstrak JSON dari teks (berjaga-jaga jika AI menambahkan teks lain)
-    let aiResult = { valid: false, reason: "Format AI tidak dikenali" };
+    let aiResult = { valid: false, reason: "Format respon tidak dikenali" };
     try {
       const jsonMatch = aiText.match(/\{.*\}/s);
-      if (jsonMatch) {
-        aiResult = JSON.parse(jsonMatch[0]);
-      }
-    } catch (err) {
-      console.warn("Gagal parse JSON AI:", aiText);
-    }
+      if (jsonMatch) aiResult = JSON.parse(jsonMatch[0]);
+    } catch (err) {}
 
     btn.textContent = 'Menyimpan data...';
     
-    // Simpan gambar sebagai Base64 (karena Firebase Storage belum tentu aktif)
+    // 3. Simpan ke Database
     await addDoc(collection(db, "claims"), {
       userId: USER.uid,
       userEmail: USER.email,
@@ -367,7 +355,7 @@ window.submitProof = async () => {
       missionId: activeMission.id,
       missionTitle: activeMission.title,
       reward: Number(activeMission.reward),
-      proofUrl: base64Image, 
+      proofUrl: compressedBase64, 
       status: aiResult.valid ? "approved" : "rejected",
       aiReason: aiResult.reason || "Tidak ada alasan",
       createdAt: serverTimestamp()
