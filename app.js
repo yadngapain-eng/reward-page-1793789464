@@ -310,7 +310,7 @@ window.submitProof = async () => {
       method: "POST",
       headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "llama-3.2-11b-vision-preview",
+        model: "llama-3.2-90b-vision-preview",
         messages: [{ role: "user", content: [
           { type: "text", text: prompt },
           { type: "image_url", image_url: { url: base64Image } }
