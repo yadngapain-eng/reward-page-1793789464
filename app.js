@@ -278,7 +278,7 @@ window.submitProof = async () => {
     btn.textContent = 'Menganalisis Gambar (AI)...';
 
     // Panggil API Cloudflare (tanpa token)
-    const response = await fetch("/.well-known/pages/verify", {
+    const response = await fetch("/api/verify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
