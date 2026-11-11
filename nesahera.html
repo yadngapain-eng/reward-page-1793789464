@@ -24,7 +24,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .item{display:flex;gap:10px;margin-bottom:10px;background:#0a0e1a;padding:12px;border-radius:8px;flex-wrap:wrap;align-items:center}
 .item-input{display:flex;flex-direction:column;gap:4px;flex:1;min-width:120px}
 .item-input label{font-size:10px;color:#7d8ba3;text-transform:uppercase;font-weight:700}
-.item input{flex:1;min-width:100px;padding:8px;border-radius:6px;border:1px solid #1f2a44;background:#0a0e1a;color:#fff}
+.item input{width:100%;padding:8px;border-radius:6px;border:1px solid #1f2a44;background:#0a0e1a;color:#fff}
 .btn-danger{background:#ef4444;color:#fff;width:auto;padding:8px 12px}
 .btn-ok{background:#22c55e;color:#fff;width:auto;padding:8px 12px}
 table{width:100%;border-collapse:collapse;margin-top:15px}
@@ -34,39 +34,6 @@ th,td{border-bottom:1px solid #1f2a44;padding:10px;text-align:left;font-size:14p
 .badge.approved,.badge.paid{background:#22c55e;color:#000}
 .badge.rejected{background:#ff2d55;color:#fff}
 .img-proof{width:60px;height:60px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid #1f2a44}
-
-/* ==== CSS KARTU MISI ADMIN ==== */
-.mission-admin-card {
-  background: #0a0e1a; border: 1px solid #1f2a44; border-radius: 12px;
-  padding: 16px; margin-bottom: 12px; position: relative;
-  transition: 0.2s;
-}
-.mission-admin-card:hover { border-color: #00e0ff; }
-.mission-admin-header {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 12px; border-bottom: 1px dashed #1f2a44; padding-bottom: 8px;
-}
-.mission-admin-title { font-weight: 800; color: #00e0ff; font-size: 16px; }
-.mission-admin-grid {
-  display: grid; grid-template-columns: 1fr 100px 2fr; gap: 10px;
-}
-@media (max-width: 600px) {
-  .mission-admin-grid { grid-template-columns: 1fr; }
-}
-.form-group { display: flex; flex-direction: column; gap: 4px; }
-.form-group label { font-size: 11px; color: #7d8ba3; text-transform: uppercase; font-weight: 700; }
-.form-group input { margin-bottom: 0; }
-.btn-save-float {
-  position: fixed; bottom: 20px; right: 20px; z-index: 99;
-  background: #22c55e; color: #fff; padding: 16px 32px;
-  border-radius: 50px; font-size: 16px; font-weight: 900;
-  box-shadow: 0 10px 30px rgba(34, 197, 94, 0.4);
-  display: none; animation: pulse 2s infinite;
-}
-.btn-save-float.show { display: block; }
-@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-
-/* Toast Notifikasi */
 .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:#22c55e;color:#000;padding:14px 24px;border-radius:12px;font-weight:800;opacity:0;transition:.3s;z-index:9999;box-shadow:0 10px 30px rgba(0,0,0,0.5);display:flex;align-items:center;gap:10px;}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 .toast.error{background:#ef4444;color:#fff}
@@ -100,14 +67,14 @@ th,td{border-bottom:1px solid #1f2a44;padding:10px;text-align:left;font-size:14p
   <div class="panel active" id="panel-missions">
     <h2>Daftar Misi</h2>
     <div id="missionList"></div>
-    <button onclick="addMission()" style="margin-bottom:20px;width:auto">+ Tambah Misi Baru</button>
-    <button id="btnSaveMissions" onclick="saveMissions()" class="btn-save-float">Simpan Perubahan</button>
+    <button onclick="addMission()" style="margin-bottom:20px;width:auto;margin-top:10px">+ Tambah Misi Baru</button>
+    <button id="btnSaveMissions" onclick="saveMissions()" style="background:#22c55e;color:#fff;width:auto">Simpan ke Firebase</button>
   </div>
 
   <div class="panel" id="panel-payments">
     <h2>Metode Withdraw</h2>
     <div id="paymentList"></div>
-    <button onclick="addPayment()" style="margin-bottom:20px;width:auto">+ Tambah Metode</button>
+    <button onclick="addPayment()" style="margin-bottom:20px;width:auto;margin-top:10px">+ Tambah Metode</button>
     <button id="btnSavePayments" onclick="savePayments()" style="background:#22c55e;color:#fff;width:auto">Simpan ke Firebase</button>
   </div>
 
@@ -122,7 +89,6 @@ th,td{border-bottom:1px solid #1f2a44;padding:10px;text-align:left;font-size:14p
   </div>
 </div>
 
-<!-- Komponen Notifikasi (Toast) -->
 <div class="toast" id="toast">
   <span id="toastIcon">✅</span>
   <span id="toastMsg">Berhasil!</span>
@@ -141,43 +107,36 @@ import {
 const $ = id => document.getElementById(id);
 const fmt = n => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
 const ADMIN_EMAIL = "yadngapain@gmail.com";
-let CONFIG = null;
+let CONFIG = { missions: [], payments: [] };
 
-// === FUNGSI TOAST NOTIFIKASI ===
+// === TOAST ===
 function showToast(msg, isError = false) {
   const t = $('toast');
   $('toastMsg').textContent = msg;
   $('toastIcon').textContent = isError ? '❌' : '✅';
-  
   if (isError) t.classList.add('error');
   else t.classList.remove('error');
-  
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// === LOGIN GOOGLE ===
+// === LOGIN ===
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
 
 $('googleLoginBtn').onclick = async () => {
   try {
     const result = await signInWithPopup(auth, provider);
-    const user = result.user;
-    
-    if (user.email !== ADMIN_EMAIL) {
+    if (result.user.email !== ADMIN_EMAIL) {
       await signOut(auth);
       $('loginMsg').textContent = 'Akses ditolak. Anda bukan admin.';
-      return;
     }
   } catch (e) {
     $('loginMsg').textContent = e.message;
   }
 };
 
-window.logout = async () => {
-  await signOut(auth);
-};
+window.logout = async () => { await signOut(auth); };
 
 onAuthStateChanged(auth, async (u) => {
   if (!u) {
@@ -194,8 +153,7 @@ onAuthStateChanged(auth, async (u) => {
   $('loginBox').style.display = 'none';
   $('app').style.display = 'block';
   
-  await loadConfig();
-  renderAll();
+  await loadDataFromFirebase();
   listenClaims();
   listenWithdrawals();
 });
@@ -208,147 +166,102 @@ document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
   document.getElementById('panel-' + t.dataset.tab).classList.add('active');
 });
 
-// === LOAD & RENDER CONFIG ===
-async function loadConfig() {
+// === LOAD DATA (KUNCI UTAMA PERBAIKAN) ===
+async function loadDataFromFirebase() {
   try {
     const snap = await getDoc(doc(db, "settings", "global"));
-    CONFIG = snap.exists() ? snap.data() : { missions: [], payments: [] };
-    if (!CONFIG.missions) CONFIG.missions = [];
-    if (!CONFIG.payments) CONFIG.payments = [];
+    if (snap.exists()) {
+      const data = snap.data();
+      // Pastikan array missions dan payments ada
+      CONFIG.missions = Array.isArray(data.missions) ? data.missions : [];
+      CONFIG.payments = Array.isArray(data.payments) ? data.payments : [];
+    } else {
+      CONFIG.missions = [];
+      CONFIG.payments = [];
+    }
+    renderAll();
   } catch (e) {
     showToast('Gagal memuat data: ' + e.message, true);
   }
 }
 
+// === RENDER FORM ===
 function renderAll() {
   const mWrap = $('missionList'); mWrap.innerHTML = '';
   
-  if (!CONFIG.missions || CONFIG.missions.length === 0) {
-    mWrap.innerHTML = '<div style="text-align:center;padding:20px;color:#7d8ba3;">Belum ada misi. Klik "+ Tambah Misi Baru".</div>';
+  if (CONFIG.missions.length === 0) {
+    mWrap.innerHTML = '<p style="color:#7d8ba3;margin-bottom:10px;">Belum ada misi di database. Silakan tambah misi baru.</p>';
   } else {
     CONFIG.missions.forEach((m, i) => {
-      const el = document.createElement('div'); el.className = 'mission-admin-card';
-      
-      // Deteksi judul otomatis (mendukung format lama & baru)
-      const titleVal = m.title || m.judul || m.name || '';
-      const rewardVal = m.reward || m.poin || 0;
-      
-      el.innerHTML = 
-        '<div class="mission-admin-header">' +
-          '<div class="mission-admin-title">Misi #' + (i + 1) + '</div>' +
-          '<button class="btn-danger" onclick="deleteMission(' + i + ')" style="padding:4px 10px;font-size:12px;">Hapus</button>' +
-        '</div>' +
-        '<div class="mission-admin-grid">' +
-          '<div class="form-group">' +
-            '<label>Judul Misi</label>' +
-            '<input value="' + titleVal.replace(/"/g,'&quot;') + '" oninput="updateMission(' + i + ', 'title', this.value)" placeholder="Contoh: Follow Facebook"/>' +
-          '</div>' +
-          '<div class="form-group">' +
-            '<label>Poin (Rp)</label>' +
-            '<input type="number" value="' + rewardVal + '" oninput="updateMission(' + i + ', 'reward', +this.value)"/>' +
-          '</div>' +
-          '<div class="form-group">' +
-            '<label>Link Tujuan (Opsional)</label>' +
-            '<input value="' + (m.link||'').replace(/"/g,'&quot;') + '" oninput="updateMission(' + i + ', 'link', this.value)" placeholder="https://..."/>' +
-          '</div>' +
-        '</div>';
+      const el = document.createElement('div'); el.className = 'item';
+      el.innerHTML =
+        '<div class="item-input"><label>Judul Misi</label><input value="' + (m.title||'').replace(/"/g,'&quot;') + '" onchange="updateMission(' + i + ', \'title\', this.value)" placeholder="Contoh: Follow IG"/></div>' +
+        '<div class="item-input" style="flex:0 0 80px"><label>Poin</label><input type="number" value="' + (m.reward||0) + '" onchange="updateMission(' + i + ', \'reward\', +this.value)"/></div>' +
+        '<div class="item-input"><label>Link Tujuan</label><input value="' + (m.link||'').replace(/"/g,'&quot;') + '" onchange="updateMission(' + i + ', \'link\', this.value)" placeholder="https://..."/></div>' +
+        '<button class="btn-danger" style="align-self:flex-end" onclick="hapusMisi(' + i + ')">Hapus</button>';
       mWrap.appendChild(el);
     });
   }
 
   const pWrap = $('paymentList'); pWrap.innerHTML = '';
-  (CONFIG.payments || []).forEach((p, i) => {
-    const el = document.createElement('div'); el.className = 'item';
-    el.innerHTML =
-      '<input value="' + (p.name||'').replace(/"/g,'&quot;') + '" onchange="CONFIG.payments[' + i + '].name=this.value" placeholder="Nama (DANA/OVO)"/>' +
-      '<input value="' + (p.holder||'').replace(/"/g,'&quot;') + '" onchange="CONFIG.payments[' + i + '].holder=this.value" placeholder="Atas Nama"/>' +
-      '<label style="display:flex;align-items:center;gap:5px;color:#fff"><input type="checkbox" ' + (p.active?'checked':'') + ' onchange="CONFIG.payments[' + i + '].active=this.checked"/> Aktif</label>' +
-      '<button class="btn-danger" onclick="CONFIG.payments.splice(' + i + ',1);renderAll()">Hapus</button>';
-    pWrap.appendChild(el);
-  });
+  if (CONFIG.payments.length === 0) {
+    pWrap.innerHTML = '<p style="color:#7d8ba3;margin-bottom:10px;">Belum ada metode pembayaran.</p>';
+  } else {
+    CONFIG.payments.forEach((p, i) => {
+      const el = document.createElement('div'); el.className = 'item';
+      el.innerHTML =
+        '<div class="item-input"><label>Nama Metode</label><input value="' + (p.name||'').replace(/"/g,'&quot;') + '" onchange="updatePayment(' + i + ', \'name\', this.value)" placeholder="DANA/OVO"/></div>' +
+        '<div class="item-input"><label>Atas Nama</label><input value="' + (p.holder||'').replace(/"/g,'&quot;') + '" onchange="updatePayment(' + i + ', \'holder\', this.value)" placeholder="Nama Pemilik"/></div>' +
+        '<div class="item-input" style="flex:0 0 80px"><label>Aktif</label><input type="checkbox" ' + (p.active?'checked':'') + ' onchange="updatePayment(' + i + ', \'active\', this.checked)"/></div>' +
+        '<button class="btn-danger" style="align-self:flex-end" onclick="hapusPayment(' + i + ')">Hapus</button>';
+      pWrap.appendChild(el);
+    });
+  }
 }
 
-window.addMission = () => { 
-  if(!CONFIG.missions) CONFIG.missions = [];
-  CONFIG.missions.push({ id: Date.now(), title: '', reward: 10, link: '' }); 
-  renderAll(); 
-  showToast('Misi baru ditambahkan. Jangan lupa Simpan!', false);
-};
+// === FUNGSI EDIT & HAPUS MISI (Mencegah input ter-reset saat mengetik) ===
+window.updateMission = (i, key, val) => { CONFIG.missions[i][key] = val; };
+window.hapusMisi = (i) => { CONFIG.missions.splice(i, 1); renderAll(); };
+window.addMission = () => { CONFIG.missions.push({ id: Date.now(), title: '', reward: 10, link: '' }); renderAll(); };
 
-window.updateMission = (index, field, value) => {
-  CONFIG.missions[index][field] = value;
-  // Hapus format judul lama jika ada agar sinkron
-  if(field === 'title' && CONFIG.missions[index].judul) delete CONFIG.missions[index].judul;
-  if(field === 'title' && CONFIG.missions[index].name) delete CONFIG.missions[index].name;
-  
-  // Tampilkan tombol simpan melayang
-  document.getElementById('btnSaveMissions').classList.add('show');
-};
-
-window.deleteMission = (index) => {
-  if(confirm('Yakin ingin menghapus misi ini? (Tekan Simpan untuk menerapkan)')) {
-    CONFIG.missions.splice(index, 1);
-    renderAll();
-    document.getElementById('btnSaveMissions').classList.add('show');
-  }
-};
+window.updatePayment = (i, key, val) => { CONFIG.payments[i][key] = val; };
+window.hapusPayment = (i) => { CONFIG.payments.splice(i, 1); renderAll(); };
 window.addPayment = () => { CONFIG.payments.push({ id: Date.now(), name: '', holder: '', active: true }); renderAll(); };
 
-// === FUNGSI SIMPAN DENGAN NOTIFIKASI ===
+// === SIMPAN ===
 window.saveMissions = async () => {
   const btn = $('btnSaveMissions');
-  const originalText = btn.textContent;
-  
-  btn.disabled = true;
-  btn.textContent = 'Menyimpan...';
-  
+  btn.disabled = true; btn.textContent = 'Menyimpan...';
   try {
-    // Pastikan format field sesuai standar (title, reward, link)
-    const cleanMissions = CONFIG.missions.map(m => ({
-      id: m.id || Date.now(),
-      title: m.title || m.judul || m.name || 'Misi Tanpa Judul',
-      reward: Number(m.reward || m.poin || 0),
-      link: m.link || ''
-    }));
-
-    await setDoc(doc(db, "settings", "global"), { missions: cleanMissions }, { merge: true });
-    CONFIG.missions = cleanMissions; // Update state lokal
+    // Simpan tepat sebagai array `missions`
+    await setDoc(doc(db, "settings", "global"), { missions: CONFIG.missions }, { merge: true });
     showToast('Misi berhasil disimpan ke Firebase!', false);
-    btn.classList.remove('show'); // Sembunyikan tombol melayang
   } catch (e) {
-    console.error(e);
     showToast('Gagal menyimpan: ' + e.message, true);
   } finally {
-    btn.disabled = false;
-    btn.textContent = originalText;
+    btn.disabled = false; btn.textContent = 'Simpan ke Firebase';
   }
 };
 
 window.savePayments = async () => {
   const btn = $('btnSavePayments');
-  const originalText = btn.textContent;
-  
-  btn.disabled = true;
-  btn.textContent = 'Menyimpan...';
-  
+  btn.disabled = true; btn.textContent = 'Menyimpan...';
   try {
     await setDoc(doc(db, "settings", "global"), { payments: CONFIG.payments }, { merge: true });
-    showToast('Metode Withdraw berhasil disimpan!', false);
+    showToast('Metode berhasil disimpan!', false);
   } catch (e) {
-    console.error(e);
     showToast('Gagal menyimpan: ' + e.message, true);
   } finally {
-    btn.disabled = false;
-    btn.textContent = originalText;
+    btn.disabled = false; btn.textContent = 'Simpan ke Firebase';
   }
 };
 
-// === KLAIM & WITHDRAW ===
+// === KLAIM & WITHDRAW LISTENERS ===
 function listenClaims() {
   onSnapshot(collection(db, "claims"), snap => {
     const wrap = $('claimsWrap');
     if (snap.empty) { wrap.innerHTML = '<p>Belum ada klaim.</p>'; return; }
-    let html = '<table><tr><th>User</th><th>Misi</th><th>Poin</th><th>Bukti</th><th>Status & Alasan AI</th><th>Aksi</th></tr>';
+    let html = '<table><tr><th>User</th><th>Misi</th><th>Poin</th><th>Bukti</th><th>Status & Alasan</th><th>Aksi</th></tr>';
     snap.forEach(d => {
       const c = d.data();
       html +=
@@ -361,7 +274,6 @@ function listenClaims() {
         '<td>' +
           '<button class="btn-ok" onclick="markClaim(\'' + d.id + '\',\'approved\')">Setujui</button>' +
           '<button class="btn-danger" onclick="markClaim(\'' + d.id + '\',\'rejected\')">Tolak</button>' +
-          '<button class="btn-danger" onclick="delClaim(\'' + d.id + '\')">Hapus</button>' +
         '</td></tr>';
     });
     wrap.innerHTML = html + '</table>';
@@ -370,16 +282,8 @@ function listenClaims() {
 window.markClaim = async (id, status) => {
   try {
     await updateDoc(doc(db, "claims", id), { status, processedAt: serverTimestamp() });
-    showToast('Status klaim diperbarui ke ' + status, false);
+    showToast('Status klaim: ' + status, false);
   } catch (e) { showToast('Gagal update: ' + e.message, true); }
-};
-window.delClaim = async (id) => {
-  if (confirm('Hapus klaim ini?')) {
-    try {
-      await deleteDoc(doc(db, "claims", id));
-      showToast('Klaim dihapus', false);
-    } catch (e) { showToast('Gagal hapus: ' + e.message, true); }
-  }
 };
 
 function listenWithdrawals() {
@@ -406,7 +310,7 @@ function listenWithdrawals() {
 window.markWd = async (id, status) => {
   try {
     await updateDoc(doc(db, "withdrawals", id), { status, processedAt: serverTimestamp() });
-    showToast('Status withdraw diperbarui', false);
+    showToast('Status withdraw: ' + status, false);
   } catch (e) { showToast('Gagal update: ' + e.message, true); }
 };
 </script>
