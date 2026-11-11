@@ -310,7 +310,7 @@ window.submitProof = async () => {
       method: "POST",
       headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "llama-3.2-90b-vision-preview",
+        model: "llama-3.2-11b-vision-instruct",
         messages: [{ role: "user", content: [
           { type: "text", text: prompt },
           { type: "image_url", image_url: { url: base64Image } }
@@ -326,8 +326,17 @@ window.submitProof = async () => {
 
     const aiData = await response.json();
     let aiText = aiData.choices[0].message.content;
-    aiText = aiText.replace(/json/g, "").replace(/`/g, "").trim();
-    const aiResult = JSON.parse(aiText);
+    
+    // Ekstrak JSON dari teks (berjaga-jaga jika AI menambahkan teks lain)
+    let aiResult = { valid: false, reason: "Format AI tidak dikenali" };
+    try {
+      const jsonMatch = aiText.match(/\{.*\}/s);
+      if (jsonMatch) {
+        aiResult = JSON.parse(jsonMatch[0]);
+      }
+    } catch (err) {
+      console.warn("Gagal parse JSON AI:", aiText);
+    }
 
     btn.textContent = 'Menyimpan data...';
     
