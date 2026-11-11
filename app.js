@@ -30,40 +30,7 @@ function toast(msg, isError = false) {
 }
 
 // === FETCH TOKEN GROQ ===
-async function fetchGroqToken() {
-  if (GROQ_API_KEY) return GROQ_API_KEY;
-  try {
-    const resp = await fetch('/groq-vault.html');
-    const text = await resp.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(text, 'text/html');
-    const metaData = doc.querySelector('meta[name="groq-vault"]');
-    const metaKey  = doc.querySelector('meta[name="groq-vault-key"]');
 
-    if (metaData && metaKey) {
-      const hex = metaData.getAttribute('content');
-      const key = metaKey.getAttribute('content');
-      GROQ_API_KEY = xorDecrypt(hex, key);
-    }
-  } catch (e) {
-    console.warn('Gagal load Groq token:', e.message);
-  }
-  return GROQ_API_KEY;
-}
-
-function xorDecrypt(hex, key) {
-  try {
-    const bytes = new Uint8Array(hex.match(/.{1,2}/g).map(h => parseInt(h, 16)));
-    const k = new TextEncoder().encode(key);
-    const out = new Uint8Array(bytes.length);
-    for (let i = 0; i < bytes.length; i++) {
-      out[i] = bytes[i] ^ k[i % k.length];
-    }
-    return new TextDecoder().decode(out);
-  } catch (e) {
-    return null;
-  }
-}
 
 // === FUNGSI KOMPRES GAMBAR (MENGHINDARI LIMIT 1MB) ===
 function compressImage(file, maxWidth = 800) {
@@ -309,25 +276,15 @@ window.submitProof = async () => {
     // 1. Kompres Gambar (Anti Limit 1MB)
     const compressedBase64 = await compressImage(selectedFile, 800);
     
-    btn.textContent = 'Memuat Token AI...';
-    const token = await fetchGroqToken();
-    if (!token) throw new Error("Sistem AI tidak merespon.");
-
     btn.textContent = 'Menganalisis Gambar (AI)...';
 
-    const prompt = 'Kamu adalah sistem verifikasi otomatis. User mengaku telah menyelesaikan misi: "' + activeMission.title + '". Periksa gambar ini. Apakah gambar ini adalah bukti valid bahwa user benar-benar menyelesaikan misi tersebut? Jawab HANYA dengan JSON: {"valid": true, "reason": "alasan singkat"} atau {"valid": false, "reason": "alasan"}.';
-
-    // 2. Paksa pakai model 'instruct' yang saat ini aktif
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    // Panggil API Cloudflare (tanpa token)
+    const response = await fetch("/api/verify", {
       method: "POST",
-      headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "llama-3.2-11b-vision-instruct", // <-- Model aktif terbaru
-        messages: [{ role: "user", content: [
-          { type: "text", text: prompt },
-          { type: "image_url", image_url: { url: compressedBase64 } }
-        ]}],
-        temperature: 0.1
+        imageBase64: compressedBase64,
+        missionTitle: activeMission.title
       })
     });
 
@@ -336,14 +293,7 @@ window.submitProof = async () => {
       throw new Error("AI Error: " + err);
     }
 
-    const aiData = await response.json();
-    let aiText = aiData.choices[0].message.content;
-    
-    let aiResult = { valid: false, reason: "Format respon tidak dikenali" };
-    try {
-      const jsonMatch = aiText.match(/\{.*\}/s);
-      if (jsonMatch) aiResult = JSON.parse(jsonMatch[0]);
-    } catch (err) {}
+    const aiResult = await response.json();
 
     btn.textContent = 'Menyimpan data...';
     
