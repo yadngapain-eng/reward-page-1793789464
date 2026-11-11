@@ -2,19 +2,25 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
-    // Jika ada request ke /api/verify, jalankan logika AI
     if (url.pathname === "/api/verify" && request.method === "POST") {
       try {
+        // Cek apakah binding AI benar-benar ada di environment Cloudflare
+        if (!env.AI) {
+          return new Response(JSON.stringify({ 
+            error: "Binding AI tidak ditemukan. Harap hubungkan Workers AI di dashboard Cloudflare." 
+          }), { status: 500, headers: { "Content-Type": "application/json" } });
+        }
+
         const body = await request.json();
         const { imageBase64, missionTitle } = body;
 
         if (!imageBase64 || !missionTitle) {
-          return new Response(JSON.stringify({ error: "Data tidak lengkap" }), { status: 400 });
+          return new Response(JSON.stringify({ error: "Data tidak lengkap" }), { status: 400, headers: { "Content-Type": "application/json" } });
         }
 
         const prompt = 'Kamu adalah sistem verifikasi otomatis. User mengaku telah menyelesaikan misi: "' + missionTitle + '". Periksa gambar ini. Apakah gambar ini adalah bukti valid bahwa user benar-benar menyelesaikan misi tersebut? Jawab HANYA dengan format JSON: {"valid": true, "reason": "alasan singkat"} atau {"valid": false, "reason": "alasan"}.';
 
-        // Panggil Cloudflare Workers AI
+        // Panggil AI
         const aiResponse = await env.AI.run(
           "@cf/llava-hf/llava-1.5-7b-hf", 
           {
@@ -39,11 +45,10 @@ export default {
         });
 
       } catch (error) {
-        return new Response(JSON.stringify({ error: "AI Error: " + error.message }), { status: 500 });
+        return new Response(JSON.stringify({ error: "AI Error: " + error.message }), { status: 500, headers: { "Content-Type": "application/json" } });
       }
     }
 
-    // Jika bukan /api/verify, biarkan Cloudflare melayani file statis (HTML/CSS/JS)
     return env.ASSETS.fetch(request);
   }
 };
