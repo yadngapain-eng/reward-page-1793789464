@@ -203,7 +203,16 @@ function handleMissionClick(m) {
   if (!USER) return window.location.href = 'login.html';
   if (!m || !m.title) return toast('Data misi tidak valid.', true);
   
-  if (m.link) window.open(m.link, '_blank');
+  if (m.link) {
+    // Menggunakan elemen <a> untuk mencegah browser me-refresh halaman saat kembali
+    const a = document.createElement('a');
+    a.href = m.link;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
   
   activeMission = m;
   selectedFile = null;
@@ -277,6 +286,16 @@ window.submitProof = async () => {
     btn.disabled = false;
   }
 };
+
+// Mencegah refresh tidak sengaja saat kembali dari tab lain
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) {
+    // Halaman diambil dari cache (BFCache), pastikan modal tetap sesuai state
+    if (!activeMission) {
+      $('uploadModal').style.display = 'none';
+    }
+  }
+});
 
 document.addEventListener('DOMContentLoaded', () => {
   if ($('withdrawForm')) $('withdrawForm').onsubmit = async (ev) => {
