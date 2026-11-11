@@ -34,6 +34,38 @@ th,td{border-bottom:1px solid #1f2a44;padding:10px;text-align:left;font-size:14p
 .badge.approved,.badge.paid{background:#22c55e;color:#000}
 .badge.rejected{background:#ff2d55;color:#fff}
 .img-proof{width:60px;height:60px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid #1f2a44}
+
+/* ==== CSS KARTU MISI ADMIN ==== */
+.mission-admin-card {
+  background: #0a0e1a; border: 1px solid #1f2a44; border-radius: 12px;
+  padding: 16px; margin-bottom: 12px; position: relative;
+  transition: 0.2s;
+}
+.mission-admin-card:hover { border-color: #00e0ff; }
+.mission-admin-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 12px; border-bottom: 1px dashed #1f2a44; padding-bottom: 8px;
+}
+.mission-admin-title { font-weight: 800; color: #00e0ff; font-size: 16px; }
+.mission-admin-grid {
+  display: grid; grid-template-columns: 1fr 100px 2fr; gap: 10px;
+}
+@media (max-width: 600px) {
+  .mission-admin-grid { grid-template-columns: 1fr; }
+}
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group label { font-size: 11px; color: #7d8ba3; text-transform: uppercase; font-weight: 700; }
+.form-group input { margin-bottom: 0; }
+.btn-save-float {
+  position: fixed; bottom: 20px; right: 20px; z-index: 99;
+  background: #22c55e; color: #fff; padding: 16px 32px;
+  border-radius: 50px; font-size: 16px; font-weight: 900;
+  box-shadow: 0 10px 30px rgba(34, 197, 94, 0.4);
+  display: none; animation: pulse 2s infinite;
+}
+.btn-save-float.show { display: block; }
+@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
 /* Toast Notifikasi */
 .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:#22c55e;color:#000;padding:14px 24px;border-radius:12px;font-weight:800;opacity:0;transition:.3s;z-index:9999;box-shadow:0 10px 30px rgba(0,0,0,0.5);display:flex;align-items:center;gap:10px;}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
@@ -68,8 +100,8 @@ th,td{border-bottom:1px solid #1f2a44;padding:10px;text-align:left;font-size:14p
   <div class="panel active" id="panel-missions">
     <h2>Daftar Misi</h2>
     <div id="missionList"></div>
-    <button onclick="addMission()" style="margin-bottom:20px;width:auto">+ Tambah Misi</button>
-    <button id="btnSaveMissions" onclick="saveMissions()" style="background:#22c55e;color:#fff;width:auto">Simpan ke Firebase</button>
+    <button onclick="addMission()" style="margin-bottom:20px;width:auto">+ Tambah Misi Baru</button>
+    <button id="btnSaveMissions" onclick="saveMissions()" class="btn-save-float">Simpan Perubahan</button>
   </div>
 
   <div class="panel" id="panel-payments">
@@ -190,15 +222,39 @@ async function loadConfig() {
 
 function renderAll() {
   const mWrap = $('missionList'); mWrap.innerHTML = '';
-  (CONFIG.missions || []).forEach((m, i) => {
-    const el = document.createElement('div'); el.className = 'item';
-    el.innerHTML =
-      '<div class="item-input"><label>Judul Misi</label><input value="' + (m.title||'').replace(/"/g,'&quot;') + '" onchange="CONFIG.missions[' + i + '].title=this.value" placeholder="Contoh: Follow IG"/></div>' +
-      '<div class="item-input" style="flex:0 0 80px"><label>Poin</label><input type="number" value="' + (m.reward||0) + '" onchange="CONFIG.missions[' + i + '].reward=+this.value"/></div>' +
-      '<div class="item-input"><label>Link Tujuan (Opsional)</label><input value="' + (m.link||'').replace(/"/g,'&quot;') + '" onchange="CONFIG.missions[' + i + '].link=this.value" placeholder="https://..."/></div>' +
-      '<button class="btn-danger" style="align-self:flex-end" onclick="CONFIG.missions.splice(' + i + ',1);renderAll()">Hapus</button>';
-    mWrap.appendChild(el);
-  });
+  
+  if (!CONFIG.missions || CONFIG.missions.length === 0) {
+    mWrap.innerHTML = '<div style="text-align:center;padding:20px;color:#7d8ba3;">Belum ada misi. Klik "+ Tambah Misi Baru".</div>';
+  } else {
+    CONFIG.missions.forEach((m, i) => {
+      const el = document.createElement('div'); el.className = 'mission-admin-card';
+      
+      // Deteksi judul otomatis (mendukung format lama & baru)
+      const titleVal = m.title || m.judul || m.name || '';
+      const rewardVal = m.reward || m.poin || 0;
+      
+      el.innerHTML = 
+        '<div class="mission-admin-header">' +
+          '<div class="mission-admin-title">Misi #' + (i + 1) + '</div>' +
+          '<button class="btn-danger" onclick="deleteMission(' + i + ')" style="padding:4px 10px;font-size:12px;">Hapus</button>' +
+        '</div>' +
+        '<div class="mission-admin-grid">' +
+          '<div class="form-group">' +
+            '<label>Judul Misi</label>' +
+            '<input value="' + titleVal.replace(/"/g,'&quot;') + '" oninput="updateMission(' + i + ', 'title', this.value)" placeholder="Contoh: Follow Facebook"/>' +
+          '</div>' +
+          '<div class="form-group">' +
+            '<label>Poin (Rp)</label>' +
+            '<input type="number" value="' + rewardVal + '" oninput="updateMission(' + i + ', 'reward', +this.value)"/>' +
+          '</div>' +
+          '<div class="form-group">' +
+            '<label>Link Tujuan (Opsional)</label>' +
+            '<input value="' + (m.link||'').replace(/"/g,'&quot;') + '" oninput="updateMission(' + i + ', 'link', this.value)" placeholder="https://..."/>' +
+          '</div>' +
+        '</div>';
+      mWrap.appendChild(el);
+    });
+  }
 
   const pWrap = $('paymentList'); pWrap.innerHTML = '';
   (CONFIG.payments || []).forEach((p, i) => {
@@ -212,7 +268,30 @@ function renderAll() {
   });
 }
 
-window.addMission = () => { CONFIG.missions.push({ id: Date.now(), title: '', reward: 10, link: '' }); renderAll(); };
+window.addMission = () => { 
+  if(!CONFIG.missions) CONFIG.missions = [];
+  CONFIG.missions.push({ id: Date.now(), title: '', reward: 10, link: '' }); 
+  renderAll(); 
+  showToast('Misi baru ditambahkan. Jangan lupa Simpan!', false);
+};
+
+window.updateMission = (index, field, value) => {
+  CONFIG.missions[index][field] = value;
+  // Hapus format judul lama jika ada agar sinkron
+  if(field === 'title' && CONFIG.missions[index].judul) delete CONFIG.missions[index].judul;
+  if(field === 'title' && CONFIG.missions[index].name) delete CONFIG.missions[index].name;
+  
+  // Tampilkan tombol simpan melayang
+  document.getElementById('btnSaveMissions').classList.add('show');
+};
+
+window.deleteMission = (index) => {
+  if(confirm('Yakin ingin menghapus misi ini? (Tekan Simpan untuk menerapkan)')) {
+    CONFIG.missions.splice(index, 1);
+    renderAll();
+    document.getElementById('btnSaveMissions').classList.add('show');
+  }
+};
 window.addPayment = () => { CONFIG.payments.push({ id: Date.now(), name: '', holder: '', active: true }); renderAll(); };
 
 // === FUNGSI SIMPAN DENGAN NOTIFIKASI ===
@@ -224,8 +303,18 @@ window.saveMissions = async () => {
   btn.textContent = 'Menyimpan...';
   
   try {
-    await setDoc(doc(db, "settings", "global"), { missions: CONFIG.missions }, { merge: true });
+    // Pastikan format field sesuai standar (title, reward, link)
+    const cleanMissions = CONFIG.missions.map(m => ({
+      id: m.id || Date.now(),
+      title: m.title || m.judul || m.name || 'Misi Tanpa Judul',
+      reward: Number(m.reward || m.poin || 0),
+      link: m.link || ''
+    }));
+
+    await setDoc(doc(db, "settings", "global"), { missions: cleanMissions }, { merge: true });
+    CONFIG.missions = cleanMissions; // Update state lokal
     showToast('Misi berhasil disimpan ke Firebase!', false);
+    btn.classList.remove('show'); // Sembunyikan tombol melayang
   } catch (e) {
     console.error(e);
     showToast('Gagal menyimpan: ' + e.message, true);
