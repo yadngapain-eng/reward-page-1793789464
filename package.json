@@ -1,0 +1,9 @@
+{
+  "name": "duniamu-reward",
+  "version": "1.0.0",
+  "description": "Duniamu Reward Page",
+  "main": "index.html",
+  "scripts": {
+    "build": "echo 'Build complete'"
+  }
+}
