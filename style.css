@@ -56,4 +56,67 @@ main{flex:1;max-width:1180px;margin:0 auto;padding:28px 24px;width:100%}.section
 .history li{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:.9rem;display:flex;justify-content:space-between}
 .empty{text-align:center;padding:40px;color:var(--muted)}
 .footer{border-top:1px solid var(--line);padding:20px;text-align:center;color:var(--muted);font-size:.85rem;margin-top:40px}
-@media(max-width:720px){.hero{grid-template-columns:1fr}.hero-art{display:none}.nav{display:none}}
+
+/* --- MOBILE BOTTOM NAVIGATION --- */
+@media (max-width: 720px) {
+  .hero { grid-template-columns: 1fr; }
+  .hero-art { display: none; }
+  
+  /* Sembunyikan nav atas */
+  .nav { display: none; }
+
+  /* Pindahkan nav ke bawah */
+  .topbar {
+    justify-content: space-between;
+    padding: 12px 16px;
+  }
+  
+  /* Membuat Bottom Nav melayang di bawah */
+  body::after {
+    content: "";
+    display: block;
+    height: 70px; /* ruang agar konten tidak tertutup */
+  }
+}
+
+/* Gaya Bottom Nav Universal (disembunyikan di desktop) */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 60px;
+  background: rgba(18, 26, 51, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--line);
+  z-index: 10000;
+  justify-content: space-around;
+  align-items: center;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (max-width: 720px) {
+  .bottom-nav { display: flex; }
+}
+
+.bottom-nav a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  gap: 4px;
+  text-decoration: none;
+  flex: 1;
+  height: 100%;
+}
+
+.bottom-nav a.active {
+  color: var(--accent);
+}
+
+.bottom-nav a svg {
+  width: 22px; height: 22px;
+  fill: currentColor;
+}
