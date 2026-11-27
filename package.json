@@ -1,0 +1,17 @@
+{
+  "name": "duniamu",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Duniamu \u2014 baca novel, raih reward (static site)",
+  "scripts": {
+    "dev": "npx serve .",
+    "build": "echo 'static site - no build needed'",
+    "deploy": "npx wrangler pages deploy . --project-name=duniamu"
+  },
+  "keywords": [
+    "novel",
+    "reward",
+    "static"
+  ],
+  "license": "MIT"
+}

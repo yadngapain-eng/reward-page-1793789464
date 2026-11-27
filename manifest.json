@@ -1,0 +1,16 @@
+{
+  "name": "Duniamu",
+  "short_name": "Duniamu",
+  "description": "Baca novel, raih reward",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#0b1020",
+  "theme_color": "#ff7a45",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>\ud83c\udf0c</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

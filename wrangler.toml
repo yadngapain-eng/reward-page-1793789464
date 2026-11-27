@@ -1,0 +1,6 @@
+name = "duniamu"
+compatibility_date = "2026-11-01"
+pages_build_output_dir = "."
+
+# Cloudflare Pages — static, no build step
+# Deploy: npx wrangler pages deploy . --project-name=duniamu
