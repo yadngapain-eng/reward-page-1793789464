@@ -87,7 +87,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onAuthStateChanged, browserLocalPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -101,6 +101,7 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    auth.setPersistence(browserLocalPersistence);
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
@@ -112,10 +113,16 @@
 
     // Cek Redirect
     getRedirectResult(auth).then(async (result) => {
-      if (result) await checkUser(result.user);
+      if (result && result.user) {
+        await checkUser(result.user);
+      }
     }).catch((error) => {
       errorMsg.style.display = 'block';
-      errorMsg.innerText = "Gagal Login: " + error.message;
+      if (error.code === 'auth/internal-error') {
+        errorMsg.innerText = "Gagal Login: Browser memblokir cookie. Harap aktifkan 'Izinkan semua cookie' di pengaturan browser atau buka via Mode Incognito.";
+      } else {
+        errorMsg.innerText = "Gagal Login: " + error.message;
+      }
     });
 
     // Klik Login
