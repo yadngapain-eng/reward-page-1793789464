@@ -31,19 +31,23 @@ jobs:
         cd admin_app
         flutter create . --platforms=android
 
-    - name: Copy google-services.json & Keystore
+    - name: Configure Firebase & Keystore
       run: |
-        # Salin file config dan keystore yang sudah disiapkan di repo
-        cp admin_app/google-services.json admin_app/android/app/google-services.json
-        cp admin_app/android/app/debug.keystore admin_app/android/app/debug.keystore
-
-    - name: Setup Gradle for Firebase
-      run: |
-        cd admin_app/android
-        # Tambahkan plugin google-services
-        sed -i '/id "com.android.application"/a\    id "com.google.gms.google-services"' app/build.gradle
-        # Paksa gunakan debug.keystore kita
-        sed -i '/signingConfig = signingConfigs.debug/i\        storeFile file("debug.keystore")\n        storePassword "android"\n        keyAlias "androiddebugkey"\n        keyPassword "android"' app/build.gradle
+        cd admin_app
+        
+        # 1. Pindahkan google-services.json ke folder android
+        cp google-services.json android/app/google-services.json
+        
+        # 2. Pindahkan keystore (hanya jika filenya ada di root, jika tidak abaikan)
+        if [ -f debug.keystore ]; then
+          cp debug.keystore android/app/debug.keystore
+        fi
+        
+        # 3. Daftarkan plugin Google Services di build.gradle
+        sed -i '/id "com.android.application"/a\    id "com.google.gms.google-services"' android/app/build.gradle
+        
+        # 4. Tambahkan classpath google-services di build.gradle root
+        sed -i '/buildscript {/a\    dependencies {\n        classpath "com.google.gms:google-services:4.4.0"\n    }' android/build.gradle
 
     - name: Install dependencies
       run: |
