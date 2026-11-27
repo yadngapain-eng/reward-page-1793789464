@@ -1,63 +1,79 @@
-<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Beranda — Duniamu</title>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="ads/ads.css"/><link rel="stylesheet" href="style.css"/></head><body>
-<header class="topbar">
-  <a class="brand" href="index.html">🌌 Duniamu</a>
-  <nav class="nav">
-    <a href="index.html" class="active">Beranda</a>
-    <a href="library.html" >Library</a>
-    <a href="reward.html" >Reward</a>
-    <a href="withdraw.html" >Withdraw</a>
-    <a href="profile.html" >Profil</a>
-  </nav>
-  <div class="topbar-right">
-    <a href="profile.html" class="btn-user" id="btn-user-status">🔐 Login</a>
-    <button class="menu-btn" id="menu-btn">☰</button>
-    <div class="dropdown" id="dropdown">
-      <a href="index.html" class="active">🏠 Beranda</a>
-      <a href="library.html" >📚 Library</a>
-      <a href="reward.html" >🎁 Reward</a>
-      <a href="withdraw.html" >💸 Withdraw</a>
-      <a href="profile.html" >👤 Profil</a>
-    </div>
-  </div>
-</header>
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById('menu-btn');
-    const dd = document.getElementById('dropdown');
-    if(btn && dd) {
-      btn.onclick = (e) => { e.stopPropagation(); dd.style.display = dd.style.display === 'flex' ? 'none' : 'flex'; };
-      document.addEventListener('click', (e) => { if(!dd.contains(e.target) && !btn.contains(e.target)) dd.style.display = 'none'; });
-    }
-  });
-</script>
 
-<main>
-  <section class="hero">
-    <h1>Baca tanpa batas.<br/>Raih reward setiap hari.</h1>
-    <p>Temukan novel favoritmu, baca per bab, kumpulkan koin, dan tukar dengan reward menarik.</p>
-    <div class="hero-actions">
-      <a class="btn primary" href="#katalog">Mulai Baca</a>
-      <a class="btn ghost" href="reward.html">Klaim Reward</a>
-    </div>
-  </section>
-  <section id="katalog" class="section">
-    <div class="section-head">
-      <h2>Katalog Novel</h2>
-      <div class="filters" id="genre-filters">
-        <button class="chip active" data-genre="all">Semua</button>
-        <button class="chip" data-genre="Romansa">Romansa</button>
-        <button class="chip" data-genre="Fantasi">Fantasi</button>
-        <button class="chip" data-genre="Sci-Fi">Sci-Fi</button>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DUNIAMU - Baca Novel Raih Koin</title>
+  <link rel="stylesheet" href="style.css">
+  <script data-cfasync="false" src="https://abscloud.org/1/2b27b195615029bd80cdff8d1c17e40c"></script>
+  <script data-cfasync="false" src="https://bauval.org/14/7b1c31412b8f5e830a1e189f92f840b7"></script>
+</head>
+<body>
+  <div id="login-screen">
+    <h1>DUNIAMU</h1>
+    <p>Baca Novel, Raih Koin, Tersenyum.</p>
+    <button class="btn" id="google-login" style="max-width: 300px;">Login dengan Google</button>
+  </div>
+
+  <div id="app-content" style="display: none;">
+    <header>
+      <div class="logo">DUNIAMU</div>
+      <div class="coin-badge">🪙 <span id="coin-count">0</span></div>
+    </header>
+
+    <div class="container">
+      <h2>Novel Populer</h2>
+      <div class="card" style="margin-top: 15px;">
+        <h3>Judul Novel Contoh</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin: 5px 0;">Genre: Fantasi</p>
+        <button class="btn" style="margin-top: 10px;" onclick="window.location.href='reader.html'">Baca Sekarang</button>
       </div>
     </div>
-    <div class="grid" id="novel-grid"></div>
-  </section>
-</main><footer><p>© 2026 Duniamu · Dibuat untuk pembaca Indonesia</p></footer>
-<script src="firebase-config.js"></script>
-<script src="app.js"></script>
-<script src="ads/adsterra-config.js"></script>
-<script src="ads/ads-loader.js"></script>
-</body></html>
+
+    <nav class="bottom-nav">
+      <a href="index.html" class="nav-item active">🏠 Beranda</a>
+      <a href="reward.html" class="nav-item">🎁 Reward</a>
+      <a href="profile.html" class="nav-item">👤 Profil</a>
+    </nav>
+  </div>
+
+  <script type="module">
+    import { auth, db, provider, signInWithPopup, onAuthStateChanged, doc, getDoc, setDoc } from './firebase-config.js';
+
+    const loginBtn = document.getElementById('google-login');
+    const loginScreen = document.getElementById('login-screen');
+    const appContent = document.getElementById('app-content');
+    const coinCount = document.getElementById('coin-count');
+
+    loginBtn.addEventListener('click', async () => {
+      try {
+        const result = await signInWithPopup(auth, provider);
+        await checkUser(result.user);
+      } catch (error) {
+        alert("Login gagal: " + error.message);
+      }
+    });
+
+    async function checkUser(user) {
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+      
+      if (!userSnap.exists()) {
+        await setDoc(userRef, { email: user.email, coins: 50, createdAt: new Date() });
+        coinCount.innerText = "50";
+      } else {
+        coinCount.innerText = userSnap.data().coins;
+      }
+      
+      loginScreen.style.display = 'none';
+      appContent.style.display = 'block';
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) await checkUser(user);
+      else { loginScreen.style.display = 'flex'; appContent.style.display = 'none'; }
+    });
+  </script>
+</body>
+</html>

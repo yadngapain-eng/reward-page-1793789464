@@ -1,58 +1,53 @@
-<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Reward — Duniamu</title>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="ads/ads.css"/><link rel="stylesheet" href="style.css"/></head><body>
-<header class="topbar">
-  <a class="brand" href="index.html">🌌 Duniamu</a>
-  <nav class="nav">
-    <a href="index.html" >Beranda</a>
-    <a href="library.html" >Library</a>
-    <a href="reward.html" class="active">Reward</a>
-    <a href="withdraw.html" >Withdraw</a>
-    <a href="profile.html" >Profil</a>
-  </nav>
-  <div class="topbar-right">
-    <a href="profile.html" class="btn-user" id="btn-user-status">🔐 Login</a>
-    <button class="menu-btn" id="menu-btn">☰</button>
-    <div class="dropdown" id="dropdown">
-      <a href="index.html" >🏠 Beranda</a>
-      <a href="library.html" >📚 Library</a>
-      <a href="reward.html" class="active">🎁 Reward</a>
-      <a href="withdraw.html" >💸 Withdraw</a>
-      <a href="profile.html" >👤 Profil</a>
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reward - DUNIAMU</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <a href="index.html" style="color: white; font-size: 1.5rem;">←</a>
+    <div class="logo">Reward Center</div>
+    <div style="width: 24px;"></div>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <h3>Klaim Koin Gratis</h3>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin: 10px 0;">Tonton iklan singkat untuk mendapatkan koin.</p>
+      <button class="btn" id="claim-btn">Tonton Iklan (+20 🪙)</button>
     </div>
   </div>
-</header>
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById('menu-btn');
-    const dd = document.getElementById('dropdown');
-    if(btn && dd) {
-      btn.onclick = (e) => { e.stopPropagation(); dd.style.display = dd.style.display === 'flex' ? 'none' : 'flex'; };
-      document.addEventListener('click', (e) => { if(!dd.contains(e.target) && !btn.contains(e.target)) dd.style.display = 'none'; });
-    }
-  });
-</script>
 
-<main class="section">
-  <h1>Reward & Misi</h1>
-  <p class="muted" style="margin-bottom:20px">Kumpulkan koin, tukar dengan hadiah.</p>
-  <div class="card">
-    <h3>📅 Check-in Harian</h3>
-    <p class="muted small" style="margin-bottom:12px">Klaim koin setiap hari.</p>
-    <button class="btn primary" id="btn-checkin" style="width:100%">Check-in (+50 🪙)</button>
-  </div>
-  <div class="card">
-    <h3>🎯 Misi Harian</h3>
-    <ul id="mission-list" class="history" style="margin-top:12px"></ul>
-  </div>
-  <div class="card">
-    <h3>🛍️ Tukar Koin</h3>
-    <div class="grid" id="redeem-grid" style="margin-top:12px"></div>
-  </div>
-</main><footer><p>© 2026 Duniamu · Dibuat untuk pembaca Indonesia</p></footer>
-<script src="firebase-config.js"></script>
-<script src="app.js"></script>
-<script src="ads/adsterra-config.js"></script>
-<script src="ads/ads-loader.js"></script>
-</body></html>
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item">🏠 Beranda</a>
+    <a href="reward.html" class="nav-item active">🎁 Reward</a>
+    <a href="profile.html" class="nav-item">👤 Profil</a>
+  </nav>
+
+  <script type="module">
+    import { auth, db, doc, updateDoc, increment, onAuthStateChanged } from './firebase-config.js';
+
+    onAuthStateChanged(auth, (user) => { if (!user) window.location.href = 'index.html'; });
+
+    document.getElementById('claim-btn').addEventListener('click', () => {
+      // Buka Smartlink Iklan di tab baru
+      window.open('https://araplhn.org/4/f15341dc4ed341cc62411d69d314d518', '_blank');
+      
+      // Beri koin setelah beberapa detik (asumsi user melihat iklan)
+      setTimeout(async () => {
+        const user = auth.currentUser;
+        if (user) {
+          const userRef = doc(db, "users", user.uid);
+          await updateDoc(userRef, { coins: increment(20) });
+          alert("Selamat! Kamu mendapatkan 20 koin.");
+          window.location.reload();
+        }
+      }, 5000); // Tunggu 5 detik
+    });
+  </script>
+</body>
+</html>
