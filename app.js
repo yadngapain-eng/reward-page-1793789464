@@ -88,10 +88,7 @@ async function initReader(){
   prev.onclick=()=>location.href='reader.html?id='+id+'&ch='+(ch-1);
   next.onclick=()=>location.href='reader.html?id='+id+'&ch='+(ch+1);
   if(currentUser){
-    const key=id+'#'+ch;
-    if(!state.readChapters.includes(key)){
-      await saveUserState({readChapters:[...state.readChapters,key],coins:state.coins+20,history:[{t:'Baca bab',d:n.title+' · Bab '+ch,coin:20,time:new Date().toISOString()},...state.history].slice(0,50)});
-    }
+    startReadTimer(id, ch, n.title);
   }
 }
 async function initLibrary(){
@@ -205,6 +202,90 @@ function bindSmartlinkClicks() {
   });
 }
 
+
+// ============ REWARD BACA BAB (1 MENIT) ============
+const READ_MIN_MS = 60 * 1000;   // 1 menit
+let _readTimer = null;
+let _readElapsed = 0;
+let _readVisHandler = null;
+
+function _readProgressBar(show) {
+  let bar = document.getElementById('read-progress-bar');
+  if (!bar && show) {
+    bar = document.createElement('div');
+    bar.id = 'read-progress-bar';
+    bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;height:6px;' +
+      'background:rgba(255,255,255,0.08);z-index:9999';
+    bar.innerHTML = '<div id="read-progress-fill" ' +
+      'style="height:100%;width:0;background:linear-gradient(90deg,#ff7a45,#ffb347);' +
+      'transition:width 1s linear"></div>';
+    document.body.appendChild(bar);
+  } else if (bar && !show) {
+    bar.remove();
+  }
+}
+
+function _readUpdateProgress() {
+  const fill = document.getElementById('read-progress-fill');
+  if (!fill) return;
+  const pct = Math.min(100, (_readElapsed / READ_MIN_MS) * 100);
+  fill.style.width = pct + '%';
+}
+
+async function startReadTimer(novelId, chapter, novelTitle) {
+  if (!currentUser) return;
+  const key = novelId + '#' + chapter;
+  if (state.readChapters.includes(key)) {
+    // Sudah pernah dibaca → hanya catat kunjungan, tidak reward
+    return;
+  }
+  _readElapsed = 0;
+  _readProgressBar(true);
+  _readUpdateProgress();
+
+  // Timer hanya jalan saat tab aktif (anti-cheat)
+  _readTimer = setInterval(() => {
+    if (document.hidden) return;   // pause saat tab tidak aktif
+    _readElapsed += 1000;
+    _readUpdateProgress();
+    if (_readElapsed >= READ_MIN_MS) {
+      clearInterval(_readTimer);
+      _readTimer = null;
+      _readProgressBar(false);
+      _grantReadReward(novelId, chapter, novelTitle);
+    }
+  }, 1000);
+
+  // Handle tab disembunyikan/ditampilkan
+  _readVisHandler = () => {
+    if (document.hidden) return;
+    _readUpdateProgress();
+  };
+  document.addEventListener('visibilitychange', _readVisHandler);
+}
+
+async function _grantReadReward(novelId, chapter, novelTitle) {
+  const key = novelId + '#' + chapter;
+  if (state.readChapters.includes(key)) return;
+  const reward = randomCoinReward();   // pakai fungsi dari klik iklan (10-100)
+  await saveUserState({
+    coins: state.coins + reward,
+    readChapters: [...state.readChapters, key],
+    history: [{t:'Baca bab 1 menit', d: novelTitle + ' · Bab ' + chapter + ' · +' + reward + ' 🪙',
+               coin: reward, time: new Date().toISOString()}, ...state.history].slice(0,100)
+  });
+  _toast('📖 +' + reward + ' koin — selesai baca Bab ' + chapter + '!');
+}
+
+function stopReadTimer() {
+  if (_readTimer) { clearInterval(_readTimer); _readTimer = null; }
+  if (_readVisHandler) {
+    document.removeEventListener('visibilitychange', _readVisHandler);
+    _readVisHandler = null;
+  }
+  _readProgressBar(false);
+}
+
 document.addEventListener('DOMContentLoaded',async()=>{
   try{
     await initFirebase();
@@ -212,6 +293,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const page=location.pathname.split('/').pop()||'index.html';
     if(page==='index.html'||page==='') await initHome();
     else if(page==='reader.html') await initReader();
+    window.addEventListener('beforeunload', stopReadTimer);
     else if(page==='library.html') await initLibrary();
     else if(page==='reward.html') await initReward();
     else if(page==='profile.html') await initProfile();
