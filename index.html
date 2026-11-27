@@ -1,7 +1,9 @@
 <!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Duniamu — Baca Novel</title><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet"><meta name="theme-color" content="#ff7a45"/>
 <link rel="manifest" href="manifest.json"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌌</text></svg>"/>
-<link rel="stylesheet" href="style.css"/></head><body><header class="topbar"><a class="brand" href="index.html">🌌 Duniamu</a><nav class="nav"><a href="index.html" class="active">Beranda</a><a href="library.html">Library</a><a href="reward.html">Reward</a><a href="profile.html">Profil</a></nav><div class="coin-pill" id="coin-pill">🪙 0</div></header><main>
+<link rel="stylesheet" href="style.css"/><link rel="stylesheet" href="ads/ads.css"/>
+</head><body><header class="topbar"><a class="brand" href="index.html">🌌 Duniamu</a><nav class="nav"><a href="index.html" class="active">Beranda</a><a href="library.html">Library</a><a href="reward.html">Reward</a><a href="profile.html">Profil</a></nav><div class="coin-pill" id="coin-pill">🪙 0</div></header>
+<div class="ad-slot" data-ad="leaderboard"></div><main>
 <section class="hero">
   <div><h1>Baca tanpa batas.<br/>Raih reward setiap hari.</h1>
   <p>Temukan novel favoritmu, baca per bab, kumpulkan koin, dan tukar dengan reward menarik.</p>
@@ -27,5 +29,9 @@
 <section class="section reward-banner"><div><h2>🎁 Reward Hari Ini</h2>
 <p>Check-in harian, selesaikan misi, tukar koin dengan hadiah.</p></div>
 <a class="btn primary" href="reward.html">Buka Reward</a></section>
-</main><footer class="footer"><p>© 2026 Duniamu</p></footer><script src="firebase-config.js"></script>
-<script src="app.js"></script></body></html>
+</main><div class="ad-slot" data-ad="mobile_banner"></div>
+<div class="ad-slot" data-ad="medium_rect"></div>
+<footer class="footer"><p>© 2026 Duniamu</p></footer><script src="firebase-config.js"></script>
+<script src="app.js"></script><script src="ads/adsterra-config.js"></script>
+<script src="ads/ads-loader.js"></script>
+</body></html>

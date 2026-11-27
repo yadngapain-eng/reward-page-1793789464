@@ -1,11 +1,15 @@
 <!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Profil — Duniamu</title><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet"><meta name="theme-color" content="#ff7a45"/>
 <link rel="manifest" href="manifest.json"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌌</text></svg>"/>
-<link rel="stylesheet" href="style.css"/></head><body><header class="topbar"><a class="brand" href="index.html">🌌 Duniamu</a><nav class="nav"><a href="index.html">Beranda</a><a href="library.html">Library</a><a href="reward.html">Reward</a><a href="profile.html" class="active">Profil</a></nav><div class="coin-pill" id="coin-pill">🪙 0</div></header><main class="section">
+<link rel="stylesheet" href="style.css"/><link rel="stylesheet" href="ads/ads.css"/>
+</head><body><header class="topbar"><a class="brand" href="index.html">🌌 Duniamu</a><nav class="nav"><a href="index.html">Beranda</a><a href="library.html">Library</a><a href="reward.html">Reward</a><a href="profile.html" class="active">Profil</a></nav><div class="coin-pill" id="coin-pill">🪙 0</div></header>
+<div class="ad-slot" data-ad="leaderboard"></div><main class="section">
 <div class="profile-card"><div class="avatar">🧑‍🚀</div>
 <div><h1 id="profile-name">Pembaca Baru</h1>
 <p class="muted" id="profile-stats">0 koin · 0 novel</p></div>
 <button class="btn ghost" id="btn-reset">Reset Progres</button></div>
 <h2>Riwayat Reward</h2>
 <ul class="history" id="history-list"></ul></main><footer class="footer"><p>© 2026 Duniamu</p></footer><script src="firebase-config.js"></script>
-<script src="app.js"></script></body></html>
+<script src="app.js"></script><script src="ads/adsterra-config.js"></script>
+<script src="ads/ads-loader.js"></script>
+</body></html>
