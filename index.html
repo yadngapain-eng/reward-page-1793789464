@@ -85,9 +85,10 @@
     </nav>
   </div>
 
+  
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onAuthStateChanged, browserLocalPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -101,7 +102,6 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    auth.setPersistence(browserLocalPersistence);
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
@@ -110,29 +110,43 @@
     const appContent = document.getElementById('app-content');
     const coinCount = document.getElementById('coin-count');
     const errorMsg = document.getElementById('error-msg');
+    const cookieBanner = document.getElementById('cookie-banner');
 
-    // Cek Redirect
-    getRedirectResult(auth).then(async (result) => {
-      if (result && result.user) {
+    // Cek apakah cookie sudah diizinkan sebelumnya
+    function checkCookieConsent() {
+      if (!document.cookie.includes("cookie_consent=true")) {
+        cookieBanner.style.display = "block";
+      }
+    }
+    checkCookieConsent();
+
+    // Fungsi saat tombol banner diklik
+    window.acceptCookies = function() {
+      document.cookie = "cookie_consent=true; max-age=31536000; path=/";
+      cookieBanner.style.display = "none";
+      // Langsung tembak login popup
+      doLogin();
+    };
+
+    // Fungsi Login Utama
+    async function doLogin() {
+      btnLogin.innerText = "Memproses...";
+      try {
+        const result = await signInWithPopup(auth, provider);
         await checkUser(result.user);
+      } catch (error) {
+        btnLogin.innerText = "Login dengan Google";
+        errorMsg.style.display = 'block';
+        errorMsg.innerText = "Gagal Login: " + error.message + ". Pastikan Anda mengizinkan Pop-up di browser.";
       }
-    }).catch((error) => {
-      errorMsg.style.display = 'block';
-      if (error.code === 'auth/internal-error') {
-        errorMsg.innerText = "Gagal Login: Browser memblokir cookie. Harap aktifkan 'Izinkan semua cookie' di pengaturan browser atau buka via Mode Incognito.";
-      } else {
-        errorMsg.innerText = "Gagal Login: " + error.message;
-      }
-    });
+    }
 
-    // Klik Login
-    btnLogin.addEventListener('click', async () => {
-      btnLogin.innerText = "Mengalihkan...";
-      try { await signInWithRedirect(auth, provider); } 
-      catch (error) { 
-        btnLogin.innerText = "Login dengan Google"; 
-        errorMsg.style.display = 'block'; 
-        errorMsg.innerText = "Error: " + error.message; 
+    // Klik tombol login utama
+    btnLogin.addEventListener('click', () => {
+      if (!document.cookie.includes("cookie_consent=true")) {
+        cookieBanner.style.display = "block"; // Munculkan banner jika belum setuju
+      } else {
+        doLogin();
       }
     });
 
@@ -142,11 +156,8 @@
       if (!userSnap.exists()) {
         await setDoc(userRef, { email: user.email, coins: 100, createdAt: new Date() });
         coinCount.innerText = "100";
-      } else {
-        coinCount.innerText = userSnap.data().coins;
-      }
-      loginScreen.style.display = 'none'; 
-      appContent.style.display = 'block';
+      } else { coinCount.innerText = userSnap.data().coins; }
+      loginScreen.style.display = 'none'; appContent.style.display = 'block';
     }
 
     onAuthStateChanged(auth, async (user) => {
@@ -154,5 +165,13 @@
       else { loginScreen.style.display = 'flex'; appContent.style.display = 'none'; }
     });
   </script>
+
+
+  <!-- BANNER COOKIE IZIN -->
+  <div id="cookie-banner" style="position:fixed; bottom:0; left:0; width:100%; background:#1e293b; padding:15px; border-top:1px solid #3b82f6; display:none; z-index:2000; text-align:center;">
+    <p style="font-size:0.9rem; margin-bottom:10px; color:#f8fafc;">Kami membutuhkan izin Cookie untuk proses Login.</p>
+    <button onclick="acceptCookies()" style="background:#3b82f6; color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:bold; cursor:pointer;">Izinkan Cookie & Login</button>
+  </div>
+
 </body>
 </html>
