@@ -39,10 +39,13 @@
   </nav>
 
   <script type="module">
+    // Import langsung dari file config kita (sudah diinisialisasi)
+    import { auth, db } from './firebase-config.js';
+    import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
     const profileCard = document.getElementById('profile-card');
-    
-    // 1. TAMPILKAN UI DEFAULT (TOMBOL LOGIN) TERLEBIH DAHULU
-    // Ini memastikan tombol selalu muncul meskipun Firebase lambat/gagal dimuat.
+
     function showGuestUI() {
       profileCard.innerHTML = `
         <img src="https://ui-avatars.com/api/?name=Tamu&background=334155&color=fff&size=90" class="avatar">
@@ -61,17 +64,8 @@
         err.style.display = 'none';
         
         try {
-          // Import Firebase secara dinamis agar halaman tidak stuck jika gagal
-          const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
-          const { getAuth, GoogleAuthProvider, signInWithPopup } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
-          const { firebaseConfig } = await import('./firebase-config.js');
-          
-          const app = initializeApp(firebaseConfig);
-          const auth = getAuth(app);
           const provider = new GoogleAuthProvider();
-          
           await signInWithPopup(auth, provider);
-          window.location.reload(); // Refresh untuk memuat data user
         } catch (error) {
           btn.innerText = "Login dengan Google";
           err.style.display = 'block';
@@ -80,61 +74,40 @@
       });
     }
 
-    // Jalankan UI default saat halaman dimuat
     showGuestUI();
 
-    // 2. CEK APAKAH USER SUDAH LOGIN (Berjalan di background)
-    async function checkLoginStatus() {
-      try {
-        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
-        const { getAuth, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
-        const { getFirestore, doc, getDoc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-        const { firebaseConfig } = await import('./firebase-config.js');
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+        let coinData = 100;
+        
+        if (!userSnap.exists()) {
+          let guestCoins = parseInt(localStorage.getItem("duniamu_coins") || "100");
+          coinData = guestCoins;
+          await setDoc(userRef, { email: user.email, coins: guestCoins, createdAt: new Date() });
+        } else {
+          coinData = userSnap.data().coins;
+        }
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        profileCard.innerHTML = `
+          <img src="${user.photoURL || 'https://ui-avatars.com/api/?name='+user.email+'&background=3b82f6&color=fff&size=90'}" class="avatar">
+          <h3>${user.displayName || 'Pengguna DUNIAMU'}</h3>
+          <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 5px;">${user.email}</p>
+          <div class="coin-box">
+            <div style="font-size: 0.8rem; color: #94a3b8;">Total Koin</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #f59e0b;">🪙 ${coinData}</div>
+          </div>
+          <button class="btn btn-danger" id="logout-btn">Logout</button>
+        `;
 
-        onAuthStateChanged(auth, async (user) => {
-          if (user) {
-            // JIKA LOGIN, UBAH UI
-            const userRef = doc(db, "users", user.uid);
-            const userSnap = await getDoc(userRef);
-            let coinData = 100;
-            
-            if (!userSnap.exists()) {
-              let guestCoins = parseInt(localStorage.getItem("duniamu_coins") || "100");
-              coinData = guestCoins;
-              await setDoc(userRef, { email: user.email, coins: guestCoins, createdAt: new Date() });
-            } else {
-              coinData = userSnap.data().coins;
-            }
-
-            profileCard.innerHTML = `
-              <img src="${user.photoURL || 'https://ui-avatars.com/api/?name='+user.email+'&background=3b82f6&color=fff&size=90'}" class="avatar">
-              <h3>${user.displayName || 'Pengguna DUNIAMU'}</h3>
-              <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 5px;">${user.email}</p>
-              <div class="coin-box">
-                <div style="font-size: 0.8rem; color: #94a3b8;">Total Koin</div>
-                <div style="font-size: 1.8rem; font-weight: 800; color: #f59e0b;">🪙 ${coinData}</div>
-              </div>
-              <button class="btn btn-danger" id="logout-btn">Logout</button>
-            `;
-
-            document.getElementById('logout-btn').addEventListener('click', async () => {
-              const { signOut } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
-              await signOut(auth);
-              window.location.reload();
-            });
-          }
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+          await signOut(auth);
         });
-      } catch (e) {
-        console.log("Gagal memuat Firebase di background:", e);
+      } else {
+        showGuestUI();
       }
-    }
-
-    // Panggil pengecekan status login
-    checkLoginStatus();
+    });
   </script>
 </body>
 </html>
