@@ -1,34 +1,48 @@
 
 name: Build Admin APK
+
 on:
   push:
     branches: [ "main" ]
     paths:
       - 'admin_app/**'
   workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: admin_app
+
     steps:
     - uses: actions/checkout@v4
+
     - name: Setup Java
       uses: actions/setup-java@v4
       with:
         distribution: 'zulu'
         java-version: '17'
+
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
         flutter-version: '3.19.0'
         channel: 'stable'
         cache: true
+
+    - name: Create Android Structure
+      run: |
+        cd admin_app
+        flutter create . --platforms=android
+
     - name: Install dependencies
-      run: flutter pub get
+      run: |
+        cd admin_app
+        flutter pub get
+
     - name: Build APK
-      run: flutter build apk --release
+      run: |
+        cd admin_app
+        flutter build apk --release
+
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
