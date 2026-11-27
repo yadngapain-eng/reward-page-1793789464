@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="id"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Withdraw — Duniamu</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ads/ads.css"/>
+<link rel="stylesheet" href="style.css"/>
+</head><body>
+<header class="topbar">
+  <a class="brand" href="index.html">🌌 Duniamu</a>
+  <nav class="nav">
+    <a href="index.html">Beranda</a>
+    <a href="library.html">Library</a>
+    <a href="reward.html">Reward</a>
+    <a href="withdraw.html" class="active">Withdraw</a>
+    <a href="profile.html">Profil</a>
+  </nav>
+  <div class="coin-pill" id="coin-pill">🪙 0</div>
+</header>
+<div class="ad-slot" data-ad="leaderboard"></div>
+<main class="section">
+  <h1>Withdraw Koin</h1>
+  <p class="muted">100 koin = Rp100 · Minimal 10.000 koin (Rp10.000)</p>
+
+  <div class="reward-card" style="margin-top:20px">
+    <h3>Saldo</h3>
+    <p style="font-size:2rem;font-weight:800;color:var(--accent2)" id="saldo">🪙 0</p>
+    <p class="muted small" id="saldo-rupiah">= Rp0</p>
+  </div>
+
+  <div class="reward-card" style="margin-top:16px">
+    <h3>Form Withdraw</h3>
+    <label class="muted small">Jumlah koin (min 10.000)</label>
+    <input id="wd-coins" type="number" min="10000" step="1000" value="10000"
+      style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--line);background:var(--bg2);color:var(--text);margin:6px 0 12px"/>
+    <label class="muted small">Metode</label>
+    <select id="wd-method" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--line);background:var(--bg2);color:var(--text);margin:6px 0 12px">
+      <option>DANA</option><option>OVO</option><option>GoPay</option><option>Bank</option>
+    </select>
+    <label class="muted small">Nama Pemilik</label>
+    <input id="wd-name" type="text" placeholder="Nama sesuai rekening"
+      style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--line);background:var(--bg2);color:var(--text);margin:6px 0 12px"/>
+    <label class="muted small">Nomor HP / Rekening</label>
+    <input id="wd-acc" type="text" placeholder="08xxx atau no. rekening"
+      style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--line);background:var(--bg2);color:var(--text);margin:6px 0 12px"/>
+    <p class="muted small" id="wd-rupiah">= Rp10.000</p>
+    <button class="btn primary" id="btn-withdraw" style="margin-top:12px">Ajukan Withdraw</button>
+  </div>
+
+  <h2 style="margin-top:32px">Riwayat</h2>
+  <ul class="history" id="wd-history"><li><span>Belum ada pengajuan.</span></li></ul>
+</main>
+<div class="ad-slot" data-ad="medium_rect"></div>
+<footer class="footer"><p>© 2026 Duniamu</p></footer>
+<script src="firebase-config.js"></script>
+<script src="app.js"></script>
+<script src="ads/adsterra-config.js"></script>
+<script src="ads/ads-loader.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => setTimeout(initWithdrawPage, 800));
+async function initWithdrawPage() {
+  if (!currentUser) {
+    document.getElementById('saldo').textContent = '🔐 Login dulu';
+    document.getElementById('btn-withdraw').onclick = () => ensureLogin().then(() => location.reload());
+    return;
+  }
+  const coins = state.coins || 0;
+  document.getElementById('saldo').textContent = '🪙 ' + coins;
+  document.getElementById('saldo-rupiah').textContent = '= Rp' + coins;
+
+  const input = document.getElementById('wd-coins');
+  const rp = document.getElementById('wd-rupiah');
+  input.oninput = () => rp.textContent = '= Rp' + (parseInt(input.value) || 0);
+
+  document.getElementById('btn-withdraw').onclick = async () => {
+    const n = parseInt(input.value) || 0;
+    if (n < 10000) return alert('Minimal 10.000 koin');
+    if (n > coins) return alert('Koin tidak cukup');
+    const method = document.getElementById('wd-method').value;
+    const name = document.getElementById('wd-name').value.trim();
+    const acc = document.getElementById('wd-acc').value.trim();
+    if (!name || !acc) return alert('Nama & nomor wajib diisi');
+    const { collection, addDoc, serverTimestamp } = await f();
+    await addDoc(collection(FB.db, 'withdrawals'), {
+      uid: currentUser.uid, email: currentUser.email || '',
+      coins: n, rupiah: n, method, accountName: name, accountNumber: acc,
+      status: 'pending', createdAt: serverTimestamp()
+    });
+    await saveUserState({
+      coins: coins - n,
+      history: [{t:'Ajukan withdraw', d:method+' '+n+' koin', coin:-n,
+                 time:new Date().toISOString()}, ...state.history].slice(0,100)
+    });
+    alert('✅ Pengajuan terkirim.');
+    location.reload();
+  };
+
+  const { collection, query, where, getDocs } = await f();
+  const q = query(collection(FB.db, 'withdrawals'), where('uid', '==', currentUser.uid));
+  const snap = await getDocs(q);
+  const list = document.getElementById('wd-history');
+  if (snap.empty) { list.innerHTML = '<li><span>Belum ada pengajuan.</span></li>'; }
+  else {
+    list.innerHTML = '';
+    snap.forEach(d => {
+      const w = d.data();
+      const color = w.status==='approved'||w.status==='paid' ? '#4ade80'
+                  : w.status==='rejected' ? '#f87171' : '#ffb347';
+      const li = document.createElement('li');
+      li.innerHTML = '<span>' + w.method + ' · ' + w.coins + ' koin (Rp' + w.rupiah + ') · <b style="color:' + color + '">' + w.status.toUpperCase() + '</b></span><span>' + (w.createdAt && w.createdAt.toDate ? w.createdAt.toDate().toLocaleDateString() : '') + '</span>';
+      list.appendChild(li);
+    });
+  }
+}
+</script>
+</body></html>

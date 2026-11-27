@@ -19,7 +19,7 @@
     } else if (cfg.url) {
       slot.innerHTML = '<a href="' + cfg.url + '" target="_blank" rel="noopener" ' +
         'style="display:inline-block;padding:12px 24px;background:linear-gradient(135deg,#ff7a45,#ffb347);' +
-        'color:#1a1200;border-radius:12px;font-weight:700;text-decoration:none">🎁 Lihat Penawaran Spesial</a>';
+        'color:#1a1200;border-radius:12px;font-weight:700;text-decoration:none" data-ad-link="1">🎁 Lihat Penawaran Spesial</a>';
     }
   }
 

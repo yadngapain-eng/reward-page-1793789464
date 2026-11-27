@@ -152,9 +152,63 @@ async function initProfile(){
   btn.textContent='Keluar (Logout)';
   btn.onclick=async()=>{ await FB.signOut(FB.auth); location.reload(); };
 }
+
+const AD_COIN_MIN = 10;
+const AD_COIN_MAX = 100;
+const AD_DAILY_LIMIT = 20;
+
+function randomCoinReward() {
+  return Math.floor(Math.random() * (AD_COIN_MAX - AD_COIN_MIN + 1)) + AD_COIN_MIN;
+}
+function todayStr() { return new Date().toISOString().slice(0,10); }
+async function canClickAd() {
+  if (!currentUser) return false;
+  const today = todayStr();
+  if (state.adClicksDate !== today) {
+    await saveUserState({ adClicksDate: today, adClicksToday: 0 });
+    return true;
+  }
+  return (state.adClicksToday || 0) < AD_DAILY_LIMIT;
+}
+async function rewardAdClick(source) {
+  if (!currentUser) { _toast('Login dulu untuk dapat koin'); return 0; }
+  if (!(await canClickAd())) {
+    _toast('Batas klik iklan hari ini (' + AD_DAILY_LIMIT + 'x). Kembali besok.');
+    return 0;
+  }
+  const reward = randomCoinReward();
+  await saveUserState({
+    coins: state.coins + reward,
+    adClicksToday: (state.adClicksToday || 0) + 1,
+    adClicksDate: todayStr(),
+    adClickTotal: (state.adClickTotal || 0) + 1,
+    history: [{t:'Klik iklan', d: source + ' · +' + reward + ' 🪙',
+               coin: reward, time: new Date().toISOString()}, ...state.history].slice(0,100)
+  });
+  _toast('🎉 +' + reward + ' koin dari klik iklan!');
+  return reward;
+}
+function _toast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);' +
+    'background:#182140;color:#fff;padding:12px 20px;border-radius:10px;' +
+    'box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:9999;font-weight:600';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+function bindSmartlinkClicks() {
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[data-ad-link]');
+    if (!a) return;
+    setTimeout(() => rewardAdClick('Smartlink'), 500);
+  });
+}
+
 document.addEventListener('DOMContentLoaded',async()=>{
   try{
     await initFirebase();
+    bindSmartlinkClicks();
     const page=location.pathname.split('/').pop()||'index.html';
     if(page==='index.html'||page==='') await initHome();
     else if(page==='reader.html') await initReader();
