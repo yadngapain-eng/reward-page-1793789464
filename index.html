@@ -2,20 +2,23 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DUNIAMU - Baca Novel Raih Koin</title>
   <link rel="stylesheet" href="style.css">
   <script data-cfasync="false" src="https://abscloud.org/1/2b27b195615029bd80cdff8d1c17e40c"></script>
   <script data-cfasync="false" src="https://bauval.org/14/7b1c31412b8f5e830a1e189f92f840b7"></script>
 </head>
 <body>
+  <!-- LOGIN SCREEN -->
   <div id="login-screen">
     <h1>DUNIAMU</h1>
     <p>Baca Novel, Raih Koin, Tersenyum.</p>
-    <button class="btn" id="google-login" style="max-width: 300px;">Login dengan Google</button>
+    <button class="login-btn" id="google-login">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G"> Login dengan Google
+    </button>
   </div>
 
+  <!-- MAIN APP -->
   <div id="app-content" style="display: none;">
     <header>
       <div class="logo">DUNIAMU</div>
@@ -23,18 +26,29 @@
     </header>
 
     <div class="container">
-      <h2>Novel Populer</h2>
-      <div class="card" style="margin-top: 15px;">
-        <h3>Judul Novel Contoh</h3>
-        <p style="color: var(--text-muted); font-size: 0.9rem; margin: 5px 0;">Genre: Fantasi</p>
-        <button class="btn" style="margin-top: 10px;" onclick="window.location.href='reader.html'">Baca Sekarang</button>
+      <h2 style="margin-bottom: 16px; font-size: 1.3rem;">Novel Populer</h2>
+      <div class="novel-grid">
+        <div class="novel-card" onclick="window.location.href='reader.html'">
+          <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=300&auto=format&fit=crop" class="novel-cover">
+          <div class="novel-info">
+            <div class="novel-title">Petualangan Di Jupiter</div>
+            <div style="font-size: 0.7rem; color: var(--muted);">Bab 1 · Fantasi</div>
+          </div>
+        </div>
+        <div class="novel-card">
+          <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=300&auto=format&fit=crop" class="novel-cover">
+          <div class="novel-info">
+            <div class="novel-title">Rahasia Bintang</div>
+            <div style="font-size: 0.7rem; color: var(--muted);">Bab 1 · Romantis</div>
+          </div>
+        </div>
       </div>
     </div>
 
     <nav class="bottom-nav">
-      <a href="index.html" class="nav-item active">🏠 Beranda</a>
-      <a href="reward.html" class="nav-item">🎁 Reward</a>
-      <a href="profile.html" class="nav-item">👤 Profil</a>
+      <a href="index.html" class="nav-item active"><span class="nav-icon">🏠</span>Beranda</a>
+      <a href="reward.html" class="nav-item"><span class="nav-icon">🎁</span>Reward</a>
+      <a href="profile.html" class="nav-item"><span class="nav-icon">👤</span>Profil</a>
     </nav>
   </div>
 
@@ -50,24 +64,17 @@
       try {
         const result = await signInWithPopup(auth, provider);
         await checkUser(result.user);
-      } catch (error) {
-        alert("Login gagal: " + error.message);
-      }
+      } catch (error) { alert("Login gagal: " + error.message); }
     });
 
     async function checkUser(user) {
       const userRef = doc(db, "users", user.uid);
       const userSnap = await getDoc(userRef);
-      
       if (!userSnap.exists()) {
-        await setDoc(userRef, { email: user.email, coins: 50, createdAt: new Date() });
-        coinCount.innerText = "50";
-      } else {
-        coinCount.innerText = userSnap.data().coins;
-      }
-      
-      loginScreen.style.display = 'none';
-      appContent.style.display = 'block';
+        await setDoc(userRef, { email: user.email, coins: 100, createdAt: new Date() });
+        coinCount.innerText = "100";
+      } else { coinCount.innerText = userSnap.data().coins; }
+      loginScreen.style.display = 'none'; appContent.style.display = 'block';
     }
 
     onAuthStateChanged(auth, async (user) => {

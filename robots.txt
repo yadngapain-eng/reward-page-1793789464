@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://duniamu.pages.dev/sitemap.xml

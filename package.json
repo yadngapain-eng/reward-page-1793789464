@@ -1,8 +1,0 @@
-{
-  "name": "duniamu",
-  "version": "1.0.0",
-  "description": "DUNIAMU - Baca Novel Raih Koin",
-  "scripts": {
-    "build": "echo 'Build step not required for static site'"
-  }
-}

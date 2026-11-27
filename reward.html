@@ -1,52 +1,35 @@
 
 <!DOCTYPE html>
 <html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reward - DUNIAMU</title>
-  <link rel="stylesheet" href="style.css">
-</head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Reward - DUNIAMU</title><link rel="stylesheet" href="style.css"></head>
 <body>
-  <header>
-    <a href="index.html" style="color: white; font-size: 1.5rem;">←</a>
-    <div class="logo">Reward Center</div>
-    <div style="width: 24px;"></div>
-  </header>
-
+  <header><a href="index.html" style="color:white; font-size:1.5rem;">←</a><div class="logo">Reward</div><div style="width:24px;"></div></header>
   <div class="container">
-    <div class="card">
+    <div class="card" style="text-align:center;">
+      <div style="font-size: 3rem; margin-bottom: 10px;">🎁</div>
       <h3>Klaim Koin Gratis</h3>
-      <p style="color: var(--text-muted); font-size: 0.9rem; margin: 10px 0;">Tonton iklan singkat untuk mendapatkan koin.</p>
-      <button class="btn" id="claim-btn">Tonton Iklan (+20 🪙)</button>
+      <p>Tonton iklan singkat dan dapatkan 20 Koin.</p>
+      <button class="btn btn-accent" id="claim-btn">Tonton Iklan (+20 🪙)</button>
     </div>
   </div>
-
   <nav class="bottom-nav">
-    <a href="index.html" class="nav-item">🏠 Beranda</a>
-    <a href="reward.html" class="nav-item active">🎁 Reward</a>
-    <a href="profile.html" class="nav-item">👤 Profil</a>
+    <a href="index.html" class="nav-item"><span class="nav-icon">🏠</span>Beranda</a>
+    <a href="reward.html" class="nav-item active"><span class="nav-icon">🎁</span>Reward</a>
+    <a href="profile.html" class="nav-item"><span class="nav-icon">👤</span>Profil</a>
   </nav>
-
   <script type="module">
     import { auth, db, doc, updateDoc, increment, onAuthStateChanged } from './firebase-config.js';
-
     onAuthStateChanged(auth, (user) => { if (!user) window.location.href = 'index.html'; });
-
     document.getElementById('claim-btn').addEventListener('click', () => {
-      // Buka Smartlink Iklan di tab baru
       window.open('https://araplhn.org/4/f15341dc4ed341cc62411d69d314d518', '_blank');
-      
-      // Beri koin setelah beberapa detik (asumsi user melihat iklan)
       setTimeout(async () => {
         const user = auth.currentUser;
         if (user) {
-          const userRef = doc(db, "users", user.uid);
-          await updateDoc(userRef, { coins: increment(20) });
-          alert("Selamat! Kamu mendapatkan 20 koin.");
+          await updateDoc(doc(db, "users", user.uid), { coins: increment(20) });
+          alert("Berhasil! +20 Koin ditambahkan.");
           window.location.reload();
         }
-      }, 5000); // Tunggu 5 detik
+      }, 4000);
     });
   </script>
 </body>

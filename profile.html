@@ -1,57 +1,40 @@
 
 <!DOCTYPE html>
 <html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Profil - DUNIAMU</title>
-  <link rel="stylesheet" href="style.css">
-</head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Profil - DUNIAMU</title><link rel="stylesheet" href="style.css"></head>
 <body>
-  <header>
-    <a href="index.html" style="color: white; font-size: 1.5rem;">←</a>
-    <div class="logo">Profil Saya</div>
-    <div style="width: 24px;"></div>
-  </header>
-
+  <header><a href="index.html" style="color:white; font-size:1.5rem;">←</a><div class="logo">Profil</div><div style="width:24px;"></div></header>
   <div class="container">
-    <div class="card" style="text-align: center;">
-      <img id="user-avatar" src="" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 10px; background: #334155;">
+    <div class="card" style="text-align:center; padding: 30px 20px;">
+      <img id="user-avatar" src="" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 12px; background: #334155; border: 3px solid var(--primary);">
       <h3 id="user-name">Loading...</h3>
-      <p id="user-email" style="color: var(--text-muted); font-size: 0.9rem;"></p>
+      <p id="user-email" style="color: var(--muted); font-size: 0.9rem; margin-bottom: 20px;"></p>
+      <div style="background: rgba(245, 158, 11, 0.1); padding: 15px; border-radius: 12px; border: 1px solid rgba(245, 158, 11, 0.3);">
+        <div style="font-size: 0.8rem; color: var(--muted);">Total Koin</div>
+        <div style="font-size: 2rem; font-weight: 800; color: var(--accent);">🪙 <span id="profile-coins">0</span></div>
+      </div>
     </div>
-
-    <div class="card">
-      <h3 style="margin-bottom: 10px;">Tarik Saldo (Withdraw)</h3>
-      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 10px;">Tukar koin kamu menjadi saldo e-wallet.</p>
-      <button class="btn" onclick="window.location.href='withdraw.html'">Tarik Koin</button>
-    </div>
-
-    <button class="btn" style="background: #ef4444; margin-top: 20px;" id="logout-btn">Logout</button>
+    <button class="btn btn-primary" style="margin-bottom: 12px;" onclick="window.location.href='withdraw.html'">Tarik Saldo (Withdraw)</button>
+    <button class="btn btn-danger" id="logout-btn">Logout</button>
   </div>
-
   <nav class="bottom-nav">
-    <a href="index.html" class="nav-item">🏠 Beranda</a>
-    <a href="reward.html" class="nav-item">🎁 Reward</a>
-    <a href="profile.html" class="nav-item active">👤 Profil</a>
+    <a href="index.html" class="nav-item"><span class="nav-icon">🏠</span>Beranda</a>
+    <a href="reward.html" class="nav-item"><span class="nav-icon">🎁</span>Reward</a>
+    <a href="profile.html" class="nav-item active"><span class="nav-icon">👤</span>Profil</a>
   </nav>
-
   <script type="module">
-    import { auth, signOut, onAuthStateChanged } from './firebase-config.js';
-
-    onAuthStateChanged(auth, (user) => {
+    import { auth, db, signOut, onAuthStateChanged, doc, getDoc } from './firebase-config.js';
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
         document.getElementById('user-name').innerText = user.displayName || "Pengguna DUNIAMU";
         document.getElementById('user-email').innerText = user.email;
         document.getElementById('user-avatar').src = user.photoURL || "https://via.placeholder.com/80";
-      } else {
-        window.location.href = 'index.html';
-      }
+        const userSnap = await getDoc(doc(db, "users", user.uid));
+        if(userSnap.exists()) document.getElementById('profile-coins').innerText = userSnap.data().coins;
+      } else { window.location.href = 'index.html'; }
     });
-
     document.getElementById('logout-btn').addEventListener('click', async () => {
-      await signOut(auth);
-      window.location.href = 'index.html';
+      await signOut(auth); window.location.href = 'index.html';
     });
   </script>
 </body>
