@@ -24,6 +24,14 @@ function showLoginPrompt(msg){
 
 function refreshCoinPill() {
   const loginBtn = document.getElementById('btn-user-status');
+  if (loginBtn) {
+    if (state && currentUser) {
+      loginBtn.innerHTML = '👤 ' + (state.displayName ? state.displayName.split(' ')[0] : 'User');
+    } else {
+      loginBtn.innerHTML = '🔐 Login';
+    }
+  }
+
   if (state && currentUser) {
     // Sudah login: Tampilkan nama user & koin
     if (loginBtn) {
@@ -144,6 +152,24 @@ async function initReward(){
 }
 async function initProfile(){
   const name=document.getElementById('profile-name'); if(!name) return;
+  const btn=document.getElementById('btn-reset');
+  
+  if(!currentUser){
+    name.innerHTML='🔐 Belum Login';
+    document.getElementById('profile-stats').textContent='Masuk untuk menyimpan progres';
+    btn.textContent='🔐 Masuk dengan Google';
+    btn.className='btn primary';
+    btn.onclick=()=>ensureLogin().then(()=>location.reload());
+    document.getElementById('history-list').innerHTML='<li><span>Login untuk melihat riwayat.</span></li>';
+    return;
+  }
+  
+  name.textContent=state.displayName||currentUser.displayName||'Pembaca';
+  document.getElementById('profile-stats').textContent=(currentUser.email||'')+' · '+state.coins+' koin';
+  btn.textContent='Keluar (Logout)';
+  btn.className='btn ghost';
+  btn.onclick=async()=>{ await FB.signOut(FB.auth); location.reload(); };
+
   const btn=document.getElementById('btn-reset');
   if(!currentUser){
     name.innerHTML='🔐 Belum Login';

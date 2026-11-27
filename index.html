@@ -1,73 +1,63 @@
-<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Duniamu — Baca Novel</title><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet"><meta name="theme-color" content="#ff7a45"/>
-<link rel="manifest" href="manifest.json"/>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌌</text></svg>"/>
-<link rel="stylesheet" href="style.css"/><link rel="stylesheet" href="ads/ads.css"/>
-</head><body><header class="topbar"><a class="brand" href="index.html">🌌 Duniamu</a><nav class="nav"><a href="index.html" class="active">Beranda</a><a href="library.html">Library</a><a href="reward.html">Reward</a><a href="withdraw.html">Withdraw</a>
-    <a href="profile.html">Profil</a></nav>
-<div class="topbar-actions">
-  <a href="profile.html" class="login-pill" id="btn-user-status">🔐 Login</a>
-  <button class="mobile-menu-btn" id="btn-mobile-menu">☰</button>
-  <div class="mobile-dropdown" id="mobile-dropdown">
-    <a href="index.html" class="active">🏠 Beranda</a>
-    <a href="library.html" >📚 Library</a>
-    <a href="reward.html" >🎁 Reward</a>
-    <a href="withdraw.html" >💸 Withdraw</a>
-    <a href="profile.html" >👤 Profil</a>
+<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Beranda — Duniamu</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ads/ads.css"/><link rel="stylesheet" href="style.css"/></head><body>
+<header class="topbar">
+  <a class="brand" href="index.html">🌌 Duniamu</a>
+  <nav class="nav">
+    <a href="index.html" class="active">Beranda</a>
+    <a href="library.html" >Library</a>
+    <a href="reward.html" >Reward</a>
+    <a href="withdraw.html" >Withdraw</a>
+    <a href="profile.html" >Profil</a>
+  </nav>
+  <div class="topbar-right">
+    <a href="profile.html" class="btn-user" id="btn-user-status">🔐 Login</a>
+    <button class="menu-btn" id="menu-btn">☰</button>
+    <div class="dropdown" id="dropdown">
+      <a href="index.html" class="active">🏠 Beranda</a>
+      <a href="library.html" >📚 Library</a>
+      <a href="reward.html" >🎁 Reward</a>
+      <a href="withdraw.html" >💸 Withdraw</a>
+      <a href="profile.html" >👤 Profil</a>
+    </div>
   </div>
-</div>
+</header>
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById('btn-mobile-menu');
-    const dd = document.getElementById('mobile-dropdown');
+    const btn = document.getElementById('menu-btn');
+    const dd = document.getElementById('dropdown');
     if(btn && dd) {
-      btn.onclick = (e) => {
-        e.stopPropagation();
-        dd.style.display = dd.style.display === 'flex' ? 'none' : 'flex';
-      };
-      document.addEventListener('click', (e) => {
-        if(!dd.contains(e.target) && !btn.contains(e.target)) {
-          dd.style.display = 'none';
-        }
-      });
+      btn.onclick = (e) => { e.stopPropagation(); dd.style.display = dd.style.display === 'flex' ? 'none' : 'flex'; };
+      document.addEventListener('click', (e) => { if(!dd.contains(e.target) && !btn.contains(e.target)) dd.style.display = 'none'; });
     }
   });
 </script>
 
-
-
-</header>
-<div class="ad-slot" data-ad="leaderboard"></div><main>
-<section class="hero">
-  <div><h1>Baca tanpa batas.<br/>Raih reward setiap hari.</h1>
-  <p>Temukan novel favoritmu, baca per bab, kumpulkan koin, dan tukar dengan reward menarik.</p>
-  <div class="hero-actions"><a class="btn primary" href="#katalog">Mulai Baca</a>
-  <a class="btn ghost" href="reward.html">Klaim Reward</a></div></div>
-  <div class="hero-art"><div class="book-stack">
-  <div class="book b1"></div><div class="book b2"></div><div class="book b3"></div>
-  </div></div>
-</section>
-<section id="katalog" class="section">
-  <div class="section-head"><h2>Katalog Novel</h2>
-  <div class="filters" id="genre-filters">
-  <button class="chip active" data-genre="all">Semua</button>
-  <button class="chip" data-genre="Romansa">Romansa</button>
-  <button class="chip" data-genre="Fantasi">Fantasi</button>
-  <button class="chip" data-genre="Sci-Fi">Sci-Fi</button>
-  <button class="chip" data-genre="Misteri">Misteri</button>
-  <button class="chip" data-genre="Horor">Horor</button>
-  <button class="chip" data-genre="Drama">Drama</button>
-  </div></div>
-  <div class="grid" id="novel-grid"></div>
-</section>
-<section class="section reward-banner"><div><h2>🎁 Reward Hari Ini</h2>
-<p>Check-in harian, selesaikan misi, tukar koin dengan hadiah.</p></div>
-<a class="btn primary" href="reward.html">Buka Reward</a></section>
-</main><div class="ad-slot" data-ad="mobile_banner"></div>
-<div class="ad-slot" data-ad="medium_rect"></div>
-<footer class="footer"><p>© 2026 Duniamu</p></footer><script src="firebase-config.js"></script>
-<script src="app.js"></script><script src="ads/adsterra-config.js"></script>
+<main>
+  <section class="hero">
+    <h1>Baca tanpa batas.<br/>Raih reward setiap hari.</h1>
+    <p>Temukan novel favoritmu, baca per bab, kumpulkan koin, dan tukar dengan reward menarik.</p>
+    <div class="hero-actions">
+      <a class="btn primary" href="#katalog">Mulai Baca</a>
+      <a class="btn ghost" href="reward.html">Klaim Reward</a>
+    </div>
+  </section>
+  <section id="katalog" class="section">
+    <div class="section-head">
+      <h2>Katalog Novel</h2>
+      <div class="filters" id="genre-filters">
+        <button class="chip active" data-genre="all">Semua</button>
+        <button class="chip" data-genre="Romansa">Romansa</button>
+        <button class="chip" data-genre="Fantasi">Fantasi</button>
+        <button class="chip" data-genre="Sci-Fi">Sci-Fi</button>
+      </div>
+    </div>
+    <div class="grid" id="novel-grid"></div>
+  </section>
+</main><footer><p>© 2026 Duniamu · Dibuat untuk pembaca Indonesia</p></footer>
+<script src="firebase-config.js"></script>
+<script src="app.js"></script>
+<script src="ads/adsterra-config.js"></script>
 <script src="ads/ads-loader.js"></script>
-
-
-
 </body></html>

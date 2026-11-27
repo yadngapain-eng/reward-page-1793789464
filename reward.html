@@ -1,59 +1,58 @@
-<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Reward — Duniamu</title><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet"><meta name="theme-color" content="#ff7a45"/>
-<link rel="manifest" href="manifest.json"/>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌌</text></svg>"/>
-<link rel="stylesheet" href="style.css"/><link rel="stylesheet" href="ads/ads.css"/>
-</head><body><header class="topbar"><a class="brand" href="index.html">🌌 Duniamu</a><nav class="nav"><a href="index.html">Beranda</a><a href="library.html">Library</a><a href="reward.html" class="active">Reward</a><a href="withdraw.html">Withdraw</a>
-    <a href="profile.html">Profil</a></nav>
-<div class="topbar-actions">
-  <a href="profile.html" class="login-pill" id="btn-user-status">🔐 Login</a>
-  <button class="mobile-menu-btn" id="btn-mobile-menu">☰</button>
-  <div class="mobile-dropdown" id="mobile-dropdown">
-    <a href="index.html" >🏠 Beranda</a>
-    <a href="library.html" >📚 Library</a>
-    <a href="reward.html" class="active">🎁 Reward</a>
-    <a href="withdraw.html" >💸 Withdraw</a>
-    <a href="profile.html" >👤 Profil</a>
+<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Reward — Duniamu</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ads/ads.css"/><link rel="stylesheet" href="style.css"/></head><body>
+<header class="topbar">
+  <a class="brand" href="index.html">🌌 Duniamu</a>
+  <nav class="nav">
+    <a href="index.html" >Beranda</a>
+    <a href="library.html" >Library</a>
+    <a href="reward.html" class="active">Reward</a>
+    <a href="withdraw.html" >Withdraw</a>
+    <a href="profile.html" >Profil</a>
+  </nav>
+  <div class="topbar-right">
+    <a href="profile.html" class="btn-user" id="btn-user-status">🔐 Login</a>
+    <button class="menu-btn" id="menu-btn">☰</button>
+    <div class="dropdown" id="dropdown">
+      <a href="index.html" >🏠 Beranda</a>
+      <a href="library.html" >📚 Library</a>
+      <a href="reward.html" class="active">🎁 Reward</a>
+      <a href="withdraw.html" >💸 Withdraw</a>
+      <a href="profile.html" >👤 Profil</a>
+    </div>
   </div>
-</div>
+</header>
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById('btn-mobile-menu');
-    const dd = document.getElementById('mobile-dropdown');
+    const btn = document.getElementById('menu-btn');
+    const dd = document.getElementById('dropdown');
     if(btn && dd) {
-      btn.onclick = (e) => {
-        e.stopPropagation();
-        dd.style.display = dd.style.display === 'flex' ? 'none' : 'flex';
-      };
-      document.addEventListener('click', (e) => {
-        if(!dd.contains(e.target) && !btn.contains(e.target)) {
-          dd.style.display = 'none';
-        }
-      });
+      btn.onclick = (e) => { e.stopPropagation(); dd.style.display = dd.style.display === 'flex' ? 'none' : 'flex'; };
+      document.addEventListener('click', (e) => { if(!dd.contains(e.target) && !btn.contains(e.target)) dd.style.display = 'none'; });
     }
   });
 </script>
 
-
-
-</header>
-<div class="ad-slot" data-ad="leaderboard"></div><main class="section"><h1>Reward & Misi</h1>
-<p class="muted">Kumpulkan koin, tukar dengan hadiah.</p>
-<div class="reward-cards">
-<div class="reward-card"><h3>📅 Check-in Harian</h3><p>Klaim koin setiap hari.</p>
-<button class="btn primary" id="btn-checkin">Check-in (+50 🪙)</button>
-<p class="muted small" id="checkin-status"></p></div>
-<div class="reward-card"><h3>📖 Baca 1 Bab</h3>
-<p>Dapatkan 20 koin tiap bab selesai.</p>
-<p class="muted small" id="read-status"></p></div>
-<div class="reward-card"><h3>🎯 Misi Harian</h3>
-<ul id="mission-list" class="mission-list"></ul></div></div>
-<div class="redeem"><h2>Tukar Koin</h2>
-<div class="ad-slot" data-ad="smartlink"></div>
-<div class="redeem-grid" id="redeem-grid"></div></div></main><div class="ad-slot" data-ad="medium_rect"></div>
-<footer class="footer"><p>© 2026 Duniamu</p></footer><script src="firebase-config.js"></script>
-<script src="app.js"></script><script src="ads/adsterra-config.js"></script>
+<main class="section">
+  <h1>Reward & Misi</h1>
+  <p class="muted" style="margin-bottom:20px">Kumpulkan koin, tukar dengan hadiah.</p>
+  <div class="card">
+    <h3>📅 Check-in Harian</h3>
+    <p class="muted small" style="margin-bottom:12px">Klaim koin setiap hari.</p>
+    <button class="btn primary" id="btn-checkin" style="width:100%">Check-in (+50 🪙)</button>
+  </div>
+  <div class="card">
+    <h3>🎯 Misi Harian</h3>
+    <ul id="mission-list" class="history" style="margin-top:12px"></ul>
+  </div>
+  <div class="card">
+    <h3>🛍️ Tukar Koin</h3>
+    <div class="grid" id="redeem-grid" style="margin-top:12px"></div>
+  </div>
+</main><footer><p>© 2026 Duniamu · Dibuat untuk pembaca Indonesia</p></footer>
+<script src="firebase-config.js"></script>
+<script src="app.js"></script>
+<script src="ads/adsterra-config.js"></script>
 <script src="ads/ads-loader.js"></script>
-
-
-
 </body></html>
