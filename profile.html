@@ -20,6 +20,7 @@
     .bottom-nav { position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; background: #1e293b; padding: 12px 0 20px; border-top: 1px solid rgba(255,255,255,0.05); }
     .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; color: #94a3b8; text-decoration: none; gap: 4px; }
     .nav-item.active { color: #3b82f6; }
+    #error-msg { color: #ef4444; font-size: 0.8rem; margin-top: 10px; display: none; }
   </style>
 </head>
 <body>
@@ -27,7 +28,6 @@
   
   <div class="container">
     <div class="card" id="profile-card">
-      <!-- Konten akan dirender via JavaScript -->
       <div id="loading">Memuat profil...</div>
     </div>
   </div>
@@ -39,75 +39,102 @@
   </nav>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { firebaseConfig } from './firebase-config.js';
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const provider = new GoogleAuthProvider();
-
     const profileCard = document.getElementById('profile-card');
+    
+    // 1. TAMPILKAN UI DEFAULT (TOMBOL LOGIN) TERLEBIH DAHULU
+    // Ini memastikan tombol selalu muncul meskipun Firebase lambat/gagal dimuat.
+    function showGuestUI() {
+      profileCard.innerHTML = `
+        <img src="https://ui-avatars.com/api/?name=Tamu&background=334155&color=fff&size=90" class="avatar">
+        <h3>Pengguna Tamu</h3>
+        <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 5px;">Kamu belum login</p>
+        <button class="btn btn-google" id="login-btn">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"> Login dengan Google
+        </button>
+        <div id="error-msg"></div>
+      `;
+      
+      document.getElementById('login-btn').addEventListener('click', async () => {
+        const btn = document.getElementById('login-btn');
+        const err = document.getElementById('error-msg');
+        btn.innerText = "Memproses...";
+        err.style.display = 'none';
+        
+        try {
+          // Import Firebase secara dinamis agar halaman tidak stuck jika gagal
+          const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
+          const { getAuth, GoogleAuthProvider, signInWithPopup } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
+          const { firebaseConfig } = await import('./firebase-config.js');
+          
+          const app = initializeApp(firebaseConfig);
+          const auth = getAuth(app);
+          const provider = new GoogleAuthProvider();
+          
+          await signInWithPopup(auth, provider);
+          window.location.reload(); // Refresh untuk memuat data user
+        } catch (error) {
+          btn.innerText = "Login dengan Google";
+          err.style.display = 'block';
+          err.innerText = "Gagal: " + error.message;
+        }
+      });
+    }
 
-    // Fungsi Render UI berdasarkan status login
-    function renderProfile(user, userData = null) {
-      if (user) {
-        profileCard.innerHTML = `
-          <img src="${user.photoURL || 'https://via.placeholder.com/90'}" class="avatar">
-          <h3>${user.displayName || 'Pengguna DUNIAMU'}</h3>
-          <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 5px;">${user.email}</p>
-          <div class="coin-box">
-            <div style="font-size: 0.8rem; color: #94a3b8;">Total Koin</div>
-            <div style="font-size: 1.8rem; font-weight: 800; color: #f59e0b;">🪙 ${userData ? userData.coins : 0}</div>
-          </div>
-          <button class="btn btn-danger" id="logout-btn">Logout</button>
-        `;
-        document.getElementById('logout-btn').addEventListener('click', async () => {
-          await signOut(auth);
-          window.location.reload();
-        });
-      } else {
-        profileCard.innerHTML = `
-          <img src="https://via.placeholder.com/90" class="avatar">
-          <h3>Pengguna Tamu</h3>
-          <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 5px;">Kamu belum login</p>
-          <button class="btn btn-google" id="login-btn">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"> Login dengan Google
-          </button>
-        `;
-        document.getElementById('login-btn').addEventListener('click', async () => {
-          try {
-            const result = await signInWithPopup(auth, provider);
-            // Setelah login sukses, onAuthStateChanged akan otomatis terpanggil
-          } catch (error) {
-            alert("Gagal Login: " + error.message);
+    // Jalankan UI default saat halaman dimuat
+    showGuestUI();
+
+    // 2. CEK APAKAH USER SUDAH LOGIN (Berjalan di background)
+    async function checkLoginStatus() {
+      try {
+        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
+        const { getAuth, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
+        const { getFirestore, doc, getDoc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+        const { firebaseConfig } = await import('./firebase-config.js');
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        onAuthStateChanged(auth, async (user) => {
+          if (user) {
+            // JIKA LOGIN, UBAH UI
+            const userRef = doc(db, "users", user.uid);
+            const userSnap = await getDoc(userRef);
+            let coinData = 100;
+            
+            if (!userSnap.exists()) {
+              let guestCoins = parseInt(localStorage.getItem("duniamu_coins") || "100");
+              coinData = guestCoins;
+              await setDoc(userRef, { email: user.email, coins: guestCoins, createdAt: new Date() });
+            } else {
+              coinData = userSnap.data().coins;
+            }
+
+            profileCard.innerHTML = `
+              <img src="${user.photoURL || 'https://ui-avatars.com/api/?name='+user.email+'&background=3b82f6&color=fff&size=90'}" class="avatar">
+              <h3>${user.displayName || 'Pengguna DUNIAMU'}</h3>
+              <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 5px;">${user.email}</p>
+              <div class="coin-box">
+                <div style="font-size: 0.8rem; color: #94a3b8;">Total Koin</div>
+                <div style="font-size: 1.8rem; font-weight: 800; color: #f59e0b;">🪙 ${coinData}</div>
+              </div>
+              <button class="btn btn-danger" id="logout-btn">Logout</button>
+            `;
+
+            document.getElementById('logout-btn').addEventListener('click', async () => {
+              const { signOut } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
+              await signOut(auth);
+              window.location.reload();
+            });
           }
         });
+      } catch (e) {
+        console.log("Gagal memuat Firebase di background:", e);
       }
     }
 
-    // Pantau status login
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const userRef = doc(db, "users", user.uid);
-        const userSnap = await getDoc(userRef);
-        
-        if (!userSnap.exists()) {
-          // User baru: Ambil koin dari localStorage tamu, pindahkan ke Firestore
-          let guestCoins = parseInt(localStorage.getItem("duniamu_coins") || "100");
-          const newUserData = { email: user.email, coins: guestCoins, createdAt: new Date() };
-          await setDoc(userRef, newUserData);
-          renderProfile(user, newUserData);
-        } else {
-          // User lama: Tampilkan data dari Firestore
-          renderProfile(user, userSnap.data());
-        }
-      } else {
-        renderProfile(null);
-      }
-    });
+    // Panggil pengecekan status login
+    checkLoginStatus();
   </script>
 </body>
 </html>
