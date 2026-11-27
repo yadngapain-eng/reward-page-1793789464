@@ -3,175 +3,50 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DUNIAMU - Baca Novel Raih Koin</title>
-  
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
-  body { background-color: #0b1120; color: #f8fafc; min-height: 100vh; display: flex; flex-direction: column; }
-  a { text-decoration: none; color: inherit; }
-  
-  /* Header & Nav */
-  header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.05); }
-  .logo { font-size: 1.4rem; font-weight: 800; background: linear-gradient(to right, #3b82f6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-  .coin-badge { background: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; border: 1px solid rgba(245, 158, 11, 0.3); }
-  
-  /* Containers */
-  .container { padding: 20px; max-width: 600px; margin: 0 auto; width: 100%; flex: 1; padding-bottom: 80px; }
-  .card { background: #1e293b; border-radius: 16px; padding: 20px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05); }
-  
-  /* Buttons */
-  .btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: 700; font-size: 1rem; cursor: pointer; transition: opacity 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
-  .btn:active { opacity: 0.8; }
-  .btn-primary { background: #3b82f6; color: white; }
-  .btn-accent { background: #f59e0b; color: #000; }
-  .btn-danger { background: #ef4444; color: white; }
-  
-  /* Bottom Nav */
-  .bottom-nav { position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; background: #1e293b; padding: 12px 0 20px; border-top: 1px solid rgba(255,255,255,0.05); z-index: 100; }
-  .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; color: #94a3b8; gap: 4px; font-weight: 500; }
-  .nav-item.active { color: #3b82f6; }
-  .nav-icon { font-size: 1.2rem; }
-
-  /* Login Screen */
-  #login-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 20px; text-align: center; position: fixed; top: 0; left: 0; width: 100%; background: #0b1120; z-index: 1000; }
-  #login-screen h1 { font-size: 3rem; background: linear-gradient(to right, #3b82f6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
-  #login-screen p { color: #94a3b8; margin-bottom: 40px; font-size: 1.1rem; }
-  .btn-google { background: white; color: #1e293b; border: none; padding: 14px 24px; border-radius: 12px; font-size: 1rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; width: 100%; max-width: 300px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-  .btn-google img { width: 24px; height: 24px; }
-  
-  /* Novel Grid */
-  .novel-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-  .novel-card { background: #1e293b; border-radius: 12px; overflow: hidden; }
-  .novel-cover { width: 100%; aspect-ratio: 3/4; object-fit: cover; background: #334155; }
-  .novel-info { padding: 12px; }
-  .novel-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
-</style>
-
+  <title>DUNIAMU - Login</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+    body { background-color: #0b1120; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    .container { text-align: center; padding: 20px; width: 100%; max-width: 400px; }
+    h1 { font-size: 2.5rem; background: linear-gradient(to right, #3b82f6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
+    p { color: #94a3b8; margin-bottom: 30px; }
+    #g_id_onload { display: flex; justify-content: center; }
+    iframe { border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    #status { margin-top: 20px; font-size: 0.9rem; color: #ef4444; display: none; }
+  </style>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-  <!-- LOGIN SCREEN -->
-  <div id="login-screen">
+
+  <div class="container">
     <h1>DUNIAMU</h1>
     <p>Baca Novel, Raih Koin, Tersenyum.</p>
-    <button class="btn-google" id="btn-login">
-      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"> Login dengan Google
-    </button>
-    <div id="error-msg" style="color:#ef4444; margin-top:20px; display:none;"></div>
-  </div>
-
-  <!-- APP CONTENT -->
-  <div id="app-content" style="display: none;">
-    <header>
-      <div class="logo">DUNIAMU</div>
-      <div class="coin-badge">🪙 <span id="coin-count">0</span></div>
-    </header>
-    <div class="container">
-      <h2 style="margin-bottom: 16px; font-size: 1.3rem;">Novel Populer</h2>
-      <div class="novel-grid">
-        <div class="novel-card" onclick="window.location.href='reader.html'">
-          <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=300&auto=format&fit=crop" class="novel-cover">
-          <div class="novel-info"><div class="novel-title">Petualangan Di Jupiter</div><div style="font-size: 0.7rem; color: #94a3b8;">Fantasi</div></div>
-        </div>
-        <div class="novel-card">
-          <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=300&auto=format&fit=crop" class="novel-cover">
-          <div class="novel-info"><div class="novel-title">Rahasia Bintang</div><div style="font-size: 0.7rem; color: #94a3b8;">Romantis</div></div>
-        </div>
-      </div>
+    
+    <!-- Tombol Google Native (Bukan Popup Firebase) -->
+    <div id="g_id_onload"
+         data-client_id="51369340219-hh5aap514q4v30l99o9kj5chek8i4909.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="false">
     </div>
-    <nav class="bottom-nav">
-      <a href="index.html" class="nav-item active"><span class="nav-icon">🏠</span>Beranda</a>
-      <a href="reward.html" class="nav-item"><span class="nav-icon">🎁</span>Reward</a>
-      <a href="profile.html" class="nav-item"><span class="nav-icon">👤</span>Profil</a>
-    </nav>
+    <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="sign_in_with_google" data-shape="rectangular" data-logo_alignment="left"></div>
+    
+    <div id="status"></div>
   </div>
 
-  
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBXqTVX1NzPYCsTc1xALLEK_MOsASJlxzI",
-      authDomain: "duniamuu.firebaseapp.com",
-      projectId: "duniamuu",
-      storageBucket: "duniamuu.firebasestorage.app",
-      messagingSenderId: "51369340219",
-      appId: "1:51369340219:android:75688118ec8626ae14db1e"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const provider = new GoogleAuthProvider();
-
-    const btnLogin = document.getElementById('btn-login');
-    const loginScreen = document.getElementById('login-screen');
-    const appContent = document.getElementById('app-content');
-    const coinCount = document.getElementById('coin-count');
-    const errorMsg = document.getElementById('error-msg');
-    const cookieBanner = document.getElementById('cookie-banner');
-
-    // Cek apakah cookie sudah diizinkan sebelumnya
-    function checkCookieConsent() {
-      if (!document.cookie.includes("cookie_consent=true")) {
-        cookieBanner.style.display = "block";
-      }
+  <script>
+    // Callback ini otomatis terpanggil saat user berhasil login di halaman Google (Native)
+    function handleCredentialResponse(response) {
+      const statusDiv = document.getElementById('status');
+      statusDiv.style.display = 'block';
+      statusDiv.style.color = '#3b82f6';
+      statusDiv.innerText = "Login Sukses! ID Token diterima.";
+      
+      // Di sini kita bisa memverifikasi token ke backend, 
+      // Tapi karena ini statis, kita lanjut ke halaman utama saja.
+      setTimeout(() => {
+        window.location.href = "index.html"; 
+      }, 1000);
     }
-    checkCookieConsent();
-
-    // Fungsi saat tombol banner diklik
-    window.acceptCookies = function() {
-      document.cookie = "cookie_consent=true; max-age=31536000; path=/";
-      cookieBanner.style.display = "none";
-      // Langsung tembak login popup
-      doLogin();
-    };
-
-    // Fungsi Login Utama
-    async function doLogin() {
-      btnLogin.innerText = "Memproses...";
-      try {
-        const result = await signInWithPopup(auth, provider);
-        await checkUser(result.user);
-      } catch (error) {
-        btnLogin.innerText = "Login dengan Google";
-        errorMsg.style.display = 'block';
-        errorMsg.innerText = "Gagal Login: " + error.message + ". Pastikan Anda mengizinkan Pop-up di browser.";
-      }
-    }
-
-    // Klik tombol login utama
-    btnLogin.addEventListener('click', () => {
-      if (!document.cookie.includes("cookie_consent=true")) {
-        cookieBanner.style.display = "block"; // Munculkan banner jika belum setuju
-      } else {
-        doLogin();
-      }
-    });
-
-    async function checkUser(user) {
-      const userRef = doc(db, "users", user.uid);
-      const userSnap = await getDoc(userRef);
-      if (!userSnap.exists()) {
-        await setDoc(userRef, { email: user.email, coins: 100, createdAt: new Date() });
-        coinCount.innerText = "100";
-      } else { coinCount.innerText = userSnap.data().coins; }
-      loginScreen.style.display = 'none'; appContent.style.display = 'block';
-    }
-
-    onAuthStateChanged(auth, async (user) => {
-      if (user) await checkUser(user);
-      else { loginScreen.style.display = 'flex'; appContent.style.display = 'none'; }
-    });
   </script>
-
-
-  <!-- BANNER COOKIE IZIN -->
-  <div id="cookie-banner" style="position:fixed; bottom:0; left:0; width:100%; background:#1e293b; padding:15px; border-top:1px solid #3b82f6; display:none; z-index:2000; text-align:center;">
-    <p style="font-size:0.9rem; margin-bottom:10px; color:#f8fafc;">Kami membutuhkan izin Cookie untuk proses Login.</p>
-    <button onclick="acceptCookies()" style="background:#3b82f6; color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:bold; cursor:pointer;">Izinkan Cookie & Login</button>
-  </div>
-
 </body>
 </html>
