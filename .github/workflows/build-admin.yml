@@ -1,6 +1,5 @@
 
 name: Build Admin APK
-
 on:
   push:
     branches: [ "main" ]
@@ -11,7 +10,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4
 
@@ -32,6 +30,20 @@ jobs:
       run: |
         cd admin_app
         flutter create . --platforms=android
+
+    - name: Copy google-services.json & Keystore
+      run: |
+        # Salin file config dan keystore yang sudah disiapkan di repo
+        cp admin_app/google-services.json admin_app/android/app/google-services.json
+        cp admin_app/android/app/debug.keystore admin_app/android/app/debug.keystore
+
+    - name: Setup Gradle for Firebase
+      run: |
+        cd admin_app/android
+        # Tambahkan plugin google-services
+        sed -i '/id "com.android.application"/a\    id "com.google.gms.google-services"' app/build.gradle
+        # Paksa gunakan debug.keystore kita
+        sed -i '/signingConfig = signingConfigs.debug/i\        storeFile file("debug.keystore")\n        storePassword "android"\n        keyAlias "androiddebugkey"\n        keyPassword "android"' app/build.gradle
 
     - name: Install dependencies
       run: |
