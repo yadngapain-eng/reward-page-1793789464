@@ -2,84 +2,142 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DUNIAMU - Baca Novel Raih Koin</title>
-  <link rel="stylesheet" href="style.css?v=2">
+  <!-- Iklan -->
   <script data-cfasync="false" src="https://abscloud.org/1/2b27b195615029bd80cdff8d1c17e40c"></script>
   <script data-cfasync="false" src="https://bauval.org/14/7b1c31412b8f5e830a1e189f92f840b7"></script>
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    body { background-color: #0b1120; color: #f8fafc; height: 100vh; display: flex; flex-direction: column; }
+    
+    /* Tampilan Login */
+    #login-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 20px; text-align: center; }
+    #login-screen h1 { font-size: 3rem; background: linear-gradient(to right, #3b82f6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
+    #login-screen p { color: #94a3b8; margin-bottom: 40px; font-size: 1.1rem; }
+    .btn-google { background: white; color: #1e293b; border: none; padding: 14px 24px; border-radius: 12px; font-size: 1rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; width: 100%; max-width: 300px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: transform 0.2s; }
+    .btn-google:active { transform: scale(0.95); }
+    .btn-google img { width: 24px; height: 24px; }
+    
+    /* Konten Utama */
+    #app-content { display: none; padding-bottom: 70px; }
+    header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: #1e293b; position: sticky; top: 0; z-index: 100; }
+    .logo { font-size: 1.5rem; font-weight: 800; background: linear-gradient(to right, #3b82f6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .coin-badge { background: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .container { padding: 20px; }
+    .card { background: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+    .bottom-nav { position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; background: #1e293b; padding: 15px 0; border-top: 1px solid rgba(255,255,255,0.1); }
+    .nav-item { color: #94a3b8; text-decoration: none; font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+    .nav-item.active { color: #3b82f6; }
+    
+    /* Error Message */
+    #error-msg { color: #ef4444; margin-top: 20px; font-size: 0.9rem; display: none; max-width: 300px; }
+  </style>
 </head>
 <body>
   <!-- LOGIN SCREEN -->
   <div id="login-screen">
     <h1>DUNIAMU</h1>
     <p>Baca Novel, Raih Koin, Tersenyum.</p>
-    <button class="login-btn" id="google-login">
-      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" style="width: 24px; height: 24px; object-fit: contain;"> Login dengan Google
+    <button class="btn-google" id="btn-login">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"> Login dengan Google
     </button>
+    <div id="error-msg"></div>
   </div>
 
   <!-- MAIN APP -->
-  <div id="app-content" style="display: none;">
+  <div id="app-content">
     <header>
       <div class="logo">DUNIAMU</div>
       <div class="coin-badge">🪙 <span id="coin-count">0</span></div>
     </header>
-
     <div class="container">
-      <h2 style="margin-bottom: 16px; font-size: 1.3rem;">Novel Populer</h2>
-      <div class="novel-grid">
-        <div class="novel-card" onclick="window.location.href='reader.html'">
-          <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=300&auto=format&fit=crop" class="novel-cover">
-          <div class="novel-info">
-            <div class="novel-title">Petualangan Di Jupiter</div>
-            <div style="font-size: 0.7rem; color: var(--muted);">Bab 1 · Fantasi</div>
-          </div>
-        </div>
-        <div class="novel-card">
-          <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=300&auto=format&fit=crop" class="novel-cover">
-          <div class="novel-info">
-            <div class="novel-title">Rahasia Bintang</div>
-            <div style="font-size: 0.7rem; color: var(--muted);">Bab 1 · Romantis</div>
-          </div>
-        </div>
+      <h2>Novel Populer</h2>
+      <div class="card" style="margin-top: 15px;">
+        <h3>Petualangan Di Jupiter</h3>
+        <p style="color: #94a3b8; font-size: 0.9rem; margin: 5px 0;">Bab 1 · Fantasi</p>
+        <button style="width:100%; padding:10px; border-radius:8px; background:#3b82f6; color:white; border:none; margin-top:10px;" onclick="window.location.href='reader.html'">Baca Sekarang</button>
       </div>
     </div>
-
     <nav class="bottom-nav">
-      <a href="index.html" class="nav-item active"><span class="nav-icon">🏠</span>Beranda</a>
-      <a href="reward.html" class="nav-item"><span class="nav-icon">🎁</span>Reward</a>
-      <a href="profile.html" class="nav-item"><span class="nav-icon">👤</span>Profil</a>
+      <a href="index.html" class="nav-item active">🏠 Beranda</a>
+      <a href="reward.html" class="nav-item">🎁 Reward</a>
+      <a href="profile.html" class="nav-item">👤 Profil</a>
     </nav>
   </div>
 
+  <!-- JAVASCRIPT FIREBASE -->
   <script type="module">
-    import { auth, db, provider, signInWithPopup, onAuthStateChanged, doc, getDoc, setDoc } from './firebase-config.js';
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const loginBtn = document.getElementById('google-login');
+    const firebaseConfig = {
+      apiKey: "AIzaSyBXqTVX1NzPYCsTc1xALLEK_MOsASJlxzI",
+      authDomain: "duniamuu.firebaseapp.com",
+      projectId: "duniamuu",
+      storageBucket: "duniamuu.firebasestorage.app",
+      messagingSenderId: "51369340219",
+      appId: "1:51369340219:android:75688118ec8626ae14db1e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    const btnLogin = document.getElementById('btn-login');
     const loginScreen = document.getElementById('login-screen');
     const appContent = document.getElementById('app-content');
     const coinCount = document.getElementById('coin-count');
+    const errorMsg = document.getElementById('error-msg');
 
-    loginBtn.addEventListener('click', async () => {
+    // Tombol Login (Menggunakan Redirect, BUKAN Popup)
+    btnLogin.addEventListener('click', async () => {
+      btnLogin.innerText = "Mengalihkan...";
       try {
-        const result = await signInWithPopup(auth, provider);
+        await signInWithRedirect(auth, provider);
+      } catch (error) {
+        btnLogin.innerText = "Login dengan Google";
+        errorMsg.style.display = 'block';
+        errorMsg.innerText = "Error: " + error.message;
+      }
+    });
+
+    // Cek hasil login setelah redirect kembali
+    getRedirectResult(auth).then(async (result) => {
+      if (result) {
         await checkUser(result.user);
-      } catch (error) { alert("Login gagal: " + error.message); }
+      }
+    }).catch((error) => {
+      errorMsg.style.display = 'block';
+      errorMsg.innerText = "Gagal Login: " + error.message;
     });
 
     async function checkUser(user) {
       const userRef = doc(db, "users", user.uid);
       const userSnap = await getDoc(userRef);
+      
       if (!userSnap.exists()) {
         await setDoc(userRef, { email: user.email, coins: 100, createdAt: new Date() });
         coinCount.innerText = "100";
-      } else { coinCount.innerText = userSnap.data().coins; }
-      loginScreen.style.display = 'none'; appContent.style.display = 'block';
+      } else {
+        coinCount.innerText = userSnap.data().coins;
+      }
+      
+      loginScreen.style.display = 'none';
+      appContent.style.display = 'block';
     }
 
     onAuthStateChanged(auth, async (user) => {
-      if (user) await checkUser(user);
-      else { loginScreen.style.display = 'flex'; appContent.style.display = 'none'; }
+      if (user) {
+        await checkUser(user);
+      } else {
+        loginScreen.style.display = 'flex';
+        appContent.style.display = 'none';
+      }
     });
   </script>
 </body>
