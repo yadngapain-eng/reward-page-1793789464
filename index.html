@@ -2,85 +2,94 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DUNIAMU</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-    body { background-color: #0b1120; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; }
-    .container { text-align: center; padding: 20px; width: 100%; max-width: 400px; }
-    h1 { font-size: 2.5rem; background: linear-gradient(to right, #3b82f6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
-    p { color: #94a3b8; margin-bottom: 30px; }
-    button { background: white; color: #1e293b; padding: 15px 20px; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; width: 100%; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; }
-    button:active { background: #e2e8f0; }
-    #status { margin-top: 20px; font-size: 0.9rem; color: #ef4444; display: none; }
-  </style>
-</head>
-<body>
-
-  <div class="container">
-    <h1>DUNIAMU</h1>
-    <p>Baca Novel, Raih Koin, Tersenyum.</p>
-    
-    <button id="login-btn">
-      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:20px; height:20px;"> 
-      Login dengan Google
-    </button>
-    
-    <div id="status"></div>
-  </div>
-
-  <!-- IKLAN DIPINDAHKAN KE BAWAH AGAR TIDAK MEMBLOKIR SCRIPT LOGIN -->
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DUNIAMU - Baca Novel Raih Koin</title>
+  <link rel="stylesheet" href="style.css">
   <script data-cfasync="false" src="https://abscloud.org/1/2b27b195615029bd80cdff8d1c17e40c"></script>
   <script data-cfasync="false" src="https://bauval.org/14/7b1c31412b8f5e830a1e189f92f840b7"></script>
+</head>
+<body>
+  <div id="login-screen">
+    <h1>DUNIAMU</h1>
+    <p>Baca Novel, Raih Koin, Tersenyum.</p>
+    <button class="btn-google" id="btn-login">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"> Login dengan Google
+    </button>
+    <div id="error-msg"></div>
+  </div>
 
-  <!-- LOGIKA LOGIN -->
+  <div id="app-content" style="display: none;">
+    <header>
+      <div class="logo">DUNIAMU</div>
+      <div class="coin-badge">🪙 <span id="coin-count">0</span></div>
+    </header>
+    <div class="container">
+      <h2 style="margin-bottom: 16px; font-size: 1.3rem;">Novel Populer</h2>
+      <div class="novel-grid">
+        <div class="novel-card" onclick="window.location.href='reader.html'">
+          <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=300&auto=format&fit=crop" class="novel-cover">
+          <div class="novel-info"><div class="novel-title">Petualangan Di Jupiter</div><div style="font-size: 0.7rem; color: var(--muted);">Fantasi</div></div>
+        </div>
+        <div class="novel-card">
+          <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=300&auto=format&fit=crop" class="novel-cover">
+          <div class="novel-info"><div class="novel-title">Rahasia Bintang</div><div style="font-size: 0.7rem; color: var(--muted);">Romantis</div></div>
+        </div>
+      </div>
+    </div>
+    <nav class="bottom-nav">
+      <a href="index.html" class="nav-item active"><span class="nav-icon">🏠</span>Beranda</a>
+      <a href="reward.html" class="nav-item"><span class="nav-icon">🎁</span>Reward</a>
+      <a href="profile.html" class="nav-item"><span class="nav-icon">👤</span>Profil</a>
+    </nav>
+  </div>
+
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { auth, db, provider, signInWithRedirect, getRedirectResult, onAuthStateChanged, doc, getDoc, setDoc } from './firebase-config.js';
 
-    const statusDiv = document.getElementById('status');
-    const btn = document.getElementById('login-btn');
+    const btnLogin = document.getElementById('btn-login');
+    const loginScreen = document.getElementById('login-screen');
+    const appContent = document.getElementById('app-content');
+    const coinCount = document.getElementById('coin-count');
+    const errorMsg = document.getElementById('error-msg');
 
-    // Tangkap error jaringan jika Firebase gagal dimuat
-    window.addEventListener('error', function(e) {
-      statusDiv.style.display = 'block';
-      statusDiv.innerText = "Gagal memuat sistem: " + e.message;
+    // 1. Cek hasil redirect (jika baru kembali dari Google)
+    getRedirectResult(auth).then(async (result) => {
+      if (result) {
+        await checkUser(result.user);
+      }
+    }).catch((error) => {
+      errorMsg.style.display = 'block';
+      errorMsg.innerText = "Gagal Login: " + error.message;
+      btnLogin.innerText = "Login dengan Google";
     });
 
-    try {
-      const firebaseConfig = {
-        apiKey: "AIzaSyBXqTVX1NzPYCsTc1xALLEK_MOsASJlxzI",
-        authDomain: "duniamuu.firebaseapp.com",
-        projectId: "duniamuu",
-        appId: "1:51369340219:android:75688118ec8626ae14db1e"
-      };
+    // 2. Tombol Login
+    btnLogin.addEventListener('click', async () => {
+      btnLogin.innerText = "Mengalihkan...";
+      try {
+        await signInWithRedirect(auth, provider);
+      } catch (error) {
+        btnLogin.innerText = "Login dengan Google";
+        errorMsg.style.display = 'block';
+        errorMsg.innerText = "Error: " + error.message;
+      }
+    });
 
-      const app = initializeApp(firebaseConfig);
-      const auth = getAuth(app);
-      const provider = new GoogleAuthProvider();
-
-      btn.addEventListener('click', async () => {
-        btn.innerText = "Memproses...";
-        statusDiv.style.display = 'block';
-        statusDiv.style.color = '#3b82f6';
-        statusDiv.innerText = "Membuka halaman Google...";
-        
-        try {
-          await signInWithPopup(auth, provider);
-          statusDiv.innerText = "Login Berhasil!";
-          window.location.href = "reward.html"; // Sementara arahkan ke reward jika sukses
-        } catch (error) {
-          btn.innerText = "Login dengan Google";
-          statusDiv.style.color = '#ef4444';
-          statusDiv.innerText = "Error: " + error.message;
-        }
-      });
-
-    } catch (err) {
-      statusDiv.style.display = 'block';
-      statusDiv.innerText = "Sistem Error: " + err.message;
+    async function checkUser(user) {
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) {
+        await setDoc(userRef, { email: user.email, coins: 100, createdAt: new Date() });
+        coinCount.innerText = "100";
+      } else { coinCount.innerText = userSnap.data().coins; }
+      loginScreen.style.display = 'none'; appContent.style.display = 'block';
     }
+
+    // 3. Cek status login saat halaman dimuat
+    onAuthStateChanged(auth, async (user) => {
+      if (user) await checkUser(user);
+      else { loginScreen.style.display = 'flex'; appContent.style.display = 'none'; }
+    });
   </script>
 </body>
 </html>
