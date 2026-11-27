@@ -3,60 +3,42 @@
 <html lang="id">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Reward - DUNIAMU</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
-  body { background-color: #0b1120; color: #f8fafc; min-height: 100vh; display: flex; flex-direction: column; }
-  a { text-decoration: none; color: inherit; }
-  
-  /* Header & Nav */
-  header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.05); }
-  .logo { font-size: 1.4rem; font-weight: 800; background: linear-gradient(to right, #3b82f6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-  .coin-badge { background: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; border: 1px solid rgba(245, 158, 11, 0.3); }
-  
-  /* Containers */
-  .container { padding: 20px; max-width: 600px; margin: 0 auto; width: 100%; flex: 1; padding-bottom: 80px; }
-  .card { background: #1e293b; border-radius: 16px; padding: 20px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05); }
-  
-  /* Buttons */
-  .btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: 700; font-size: 1rem; cursor: pointer; transition: opacity 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
-  .btn:active { opacity: 0.8; }
-  .btn-primary { background: #3b82f6; color: white; }
-  .btn-accent { background: #f59e0b; color: #000; }
-  .btn-danger { background: #ef4444; color: white; }
-  
-  /* Bottom Nav */
-  .bottom-nav { position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; background: #1e293b; padding: 12px 0 20px; border-top: 1px solid rgba(255,255,255,0.05); z-index: 100; }
-  .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; color: #94a3b8; gap: 4px; font-weight: 500; }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+  body { background: #0b1120; color: #f8fafc; padding-bottom: 80px; }
+  header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: #1e293b; }
+  .container { padding: 20px; max-width: 600px; margin: 0 auto; }
+  .card { background: #1e293b; border-radius: 16px; padding: 20px; margin-bottom: 16px; text-align: center; }
+  .btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: 700; font-size: 1rem; cursor: pointer; background: #f59e0b; color: #000; }
+  .bottom-nav { position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; background: #1e293b; padding: 12px 0 20px; border-top: 1px solid rgba(255,255,255,0.05); }
+  .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; color: #94a3b8; text-decoration: none; gap: 4px; }
   .nav-item.active { color: #3b82f6; }
-  .nav-icon { font-size: 1.2rem; }
-
-  /* Login Screen */
-  #login-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 20px; text-align: center; position: fixed; top: 0; left: 0; width: 100%; background: #0b1120; z-index: 1000; }
-  #login-screen h1 { font-size: 3rem; background: linear-gradient(to right, #3b82f6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
-  #login-screen p { color: #94a3b8; margin-bottom: 40px; font-size: 1.1rem; }
-  .btn-google { background: white; color: #1e293b; border: none; padding: 14px 24px; border-radius: 12px; font-size: 1rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; width: 100%; max-width: 300px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-  .btn-google img { width: 24px; height: 24px; }
-  
-  /* Novel Grid */
-  .novel-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-  .novel-card { background: #1e293b; border-radius: 12px; overflow: hidden; }
-  .novel-cover { width: 100%; aspect-ratio: 3/4; object-fit: cover; background: #334155; }
-  .novel-info { padding: 12px; }
-  .novel-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
 </style>
 </head>
 <body>
-  <header><a href="index.html" style="color:white; font-size:1.5rem;">←</a><div class="logo">Reward</div><div style="width:24px;"></div></header>
+  <header><a href="index.html" style="color:white; text-decoration:none; font-size:1.5rem;">←</a><div style="font-weight:bold;">Reward</div><div style="width:24px;"></div></header>
   <div class="container">
-    <div class="card" style="text-align:center;">
+    <div class="card">
       <h3>Klaim Koin Gratis</h3>
       <p style="color: #94a3b8; margin: 10px 0;">Tonton iklan singkat untuk mendapatkan 20 Koin.</p>
-      <button class="btn btn-accent" onclick="window.open('https://araplhn.org/4/f15341dc4ed341cc62411d69d314d518','_blank')">Tonton Iklan (+20 🪙)</button>
+      <button class="btn" onclick="klaimKoin()">Tonton Iklan (+20 🪙)</button>
     </div>
   </div>
   <nav class="bottom-nav">
-    <a href="index.html" class="nav-item"><span class="nav-icon">🏠</span>Beranda</a>
-    <a href="reward.html" class="nav-item active"><span class="nav-icon">🎁</span>Reward</a>
-    <a href="profile.html" class="nav-item"><span class="nav-icon">👤</span>Profil</a>
+    <a href="index.html" class="nav-item"><span>🏠</span>Beranda</a>
+    <a href="reward.html" class="nav-item active"><span>🎁</span>Reward</a>
+    <a href="profile.html" class="nav-item"><span>👤</span>Profil</a>
   </nav>
+  <script>
+    function klaimKoin() {
+      window.open('https://araplhn.org/4/f15341dc4ed341cc62411d69d314d518', '_blank');
+      setTimeout(() => {
+        let coins = parseInt(localStorage.getItem("duniamu_coins") || "0");
+        coins += 20;
+        localStorage.setItem("duniamu_coins", coins);
+        alert("Berhasil! +20 Koin ditambahkan.");
+        window.location.href = "index.html";
+      }, 3000);
+    }
+  </script>
 </body>
 </html>
