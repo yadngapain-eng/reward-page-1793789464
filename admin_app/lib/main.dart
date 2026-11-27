@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
 
-// Token dibaca dari GitHub Secrets saat Build, bukan ditulis langsung di sini
+// Token dibaca dari GitHub Secrets saat Build
 const String GROQ_API_KEY = String.fromEnvironment('GROQ_API_KEY', defaultValue: '');
 const String ADMIN_EMAIL = "yadngapain@gmail.com";
 
