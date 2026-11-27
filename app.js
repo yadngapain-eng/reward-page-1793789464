@@ -21,13 +21,24 @@ function showLoginPrompt(msg){
   document.body.appendChild(d);
   document.getElementById('btn-g').onclick=async()=>{d.remove(); if(await ensureLogin()) location.reload();};
 }
-function refreshCoinPill(){
-  document.querySelectorAll('#coin-pill').forEach(el=>{
-    el.textContent = state ? '🪙 '+state.coins : '🔐 Login';
-    el.style.cursor='pointer';
-    el.onclick = ()=>{ if(!currentUser) ensureLogin().then(()=>location.reload()); else location.href='profile.html'; };
-  });
+
+function refreshCoinPill() {
+  const loginBtn = document.getElementById('btn-user-status');
+  if (state && currentUser) {
+    // Sudah login: Tampilkan nama user & koin
+    if (loginBtn) {
+      loginBtn.innerHTML = '👤 ' + (state.displayName ? state.displayName.split(' ')[0] : 'User');
+      loginBtn.href = 'profile.html';
+    }
+  } else {
+    // Belum login
+    if (loginBtn) {
+      loginBtn.innerHTML = '🔐 Login';
+      loginBtn.href = 'profile.html';
+    }
+  }
 }
+
 async function f(){ return await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'); }
 async function loadUserState(){
   const {doc,getDoc,setDoc,serverTimestamp}=await f();
@@ -135,7 +146,12 @@ async function initProfile(){
   const name=document.getElementById('profile-name'); if(!name) return;
   const btn=document.getElementById('btn-reset');
   if(!currentUser){
-    name.textContent='Belum login';
+    name.innerHTML='🔐 Belum Login';
+    document.getElementById('history-list').innerHTML='<li><span>Login untuk melihat riwayat.</span></li>';
+    const btn = document.getElementById('btn-reset');
+    btn.textContent = '🔐 Masuk dengan Google';
+    btn.className = 'btn primary'; // Tombol jadi warna oranye
+    btn.onclick = () => ensureLogin().then(()=>location.reload());
     document.getElementById('profile-stats').textContent='Masuk dengan Google untuk melihat statistik';
     btn.textContent='🔐 Masuk dengan Google'; btn.onclick=()=>ensureLogin().then(()=>location.reload());
     document.getElementById('history-list').innerHTML='<li><span>Login untuk melihat riwayat.</span></li>';
@@ -147,6 +163,7 @@ async function initProfile(){
   if(!state.history||state.history.length===0){ list.innerHTML='<li><span>Belum ada riwayat.</span></li>'; }
   else { list.innerHTML=state.history.slice(0,20).map(h=>'<li><span>'+h.t+' — '+h.d+'</span><span>'+(h.coin>0?'+':'')+h.coin+' 🪙</span></li>').join(''); }
   btn.textContent='Keluar (Logout)';
+  btn.className = 'btn ghost';
   btn.onclick=async()=>{ await FB.signOut(FB.auth); location.reload(); };
 }
 

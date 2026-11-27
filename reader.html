@@ -3,15 +3,17 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌌</text></svg>"/>
 <link rel="stylesheet" href="style.css"/><link rel="stylesheet" href="ads/ads.css"/>
 </head><body><header class="topbar"><a class="brand" href="index.html">🌌 Duniamu</a><nav class="nav"><a href="index.html">Beranda</a><a href="library.html">Library</a><a href="reward.html">Reward</a><a href="withdraw.html">Withdraw</a>
-    <a href="profile.html">Profil</a></nav><div class="coin-pill" id="coin-pill">🪙 0</div>
-
-<button class="mobile-menu-btn" id="btn-mobile-menu">☰</button>
-<div class="mobile-dropdown" id="mobile-dropdown">
-  <a href="index.html" >🏠 Beranda</a>
-  <a href="library.html" >📚 Library</a>
-  <a href="reward.html" >🎁 Reward</a>
-  <a href="withdraw.html" >💸 Withdraw</a>
-  <a href="profile.html" >👤 Profil</a>
+    <a href="profile.html">Profil</a></nav>
+<div class="topbar-actions">
+  <a href="profile.html" class="login-pill" id="btn-user-status">🔐 Login</a>
+  <button class="mobile-menu-btn" id="btn-mobile-menu">☰</button>
+  <div class="mobile-dropdown" id="mobile-dropdown">
+    <a href="index.html" >🏠 Beranda</a>
+    <a href="library.html" >📚 Library</a>
+    <a href="reward.html" >🎁 Reward</a>
+    <a href="withdraw.html" >💸 Withdraw</a>
+    <a href="profile.html" >👤 Profil</a>
+  </div>
 </div>
 <script>
   document.addEventListener('DOMContentLoaded', () => {
@@ -23,13 +25,16 @@
         dd.style.display = dd.style.display === 'flex' ? 'none' : 'flex';
       };
       document.addEventListener('click', (e) => {
-        if(!dd.contains(e.target) && e.target !== btn) {
+        if(!dd.contains(e.target) && !btn.contains(e.target)) {
           dd.style.display = 'none';
         }
       });
     }
   });
 </script>
+
+
+
 </header>
 <div class="ad-slot" data-ad="leaderboard"></div><main class="reader">
 <div class="reader-head"><a class="btn ghost" href="index.html">← Kembali</a>
