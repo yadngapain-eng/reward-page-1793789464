@@ -2,8 +2,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Profil - DUNIAMU</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
@@ -15,23 +14,26 @@
     .btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; }
     .btn-google { background: white; color: #1e293b; margin-top: 15px; }
     .btn-danger { background: #ef4444; color: white; margin-top: 15px; }
-    .btn-google img { width: 20px; height: 20px; }
     .coin-box { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 15px; margin-top: 15px; }
     .bottom-nav { position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; background: #1e293b; padding: 12px 0 20px; border-top: 1px solid rgba(255,255,255,0.05); }
     .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; color: #94a3b8; text-decoration: none; gap: 4px; }
     .nav-item.active { color: #3b82f6; }
-    #error-msg { color: #ef4444; font-size: 0.8rem; margin-top: 10px; display: none; }
   </style>
 </head>
 <body>
   <header><a href="index.html" style="position:absolute; left:20px; color:white; font-size:1.5rem; text-decoration:none;">←</a><div style="font-weight:bold;">Profil</div></header>
-  
   <div class="container">
     <div class="card" id="profile-card">
-      <div id="loading">Memuat profil...</div>
+      <!-- Tampilan Default Langsung Muncul -->
+      <img src="https://ui-avatars.com/api/?name=Tamu&background=334155&color=fff&size=90" class="avatar">
+      <h3>Pengguna Tamu</h3>
+      <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 5px;">Kamu belum login</p>
+      <button class="btn btn-google" id="login-btn">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:20px;"> Login dengan Google
+      </button>
+      <div id="error-msg" style="color: #ef4444; font-size: 0.8rem; margin-top: 10px; display: none;"></div>
     </div>
   </div>
-
   <nav class="bottom-nav">
     <a href="index.html" class="nav-item"><span>🏠</span>Beranda</a>
     <a href="reward.html" class="nav-item"><span>🎁</span>Reward</a>
@@ -39,43 +41,44 @@
   </nav>
 
   <script type="module">
-    // Import langsung dari file config kita (sudah diinisialisasi)
-    import { auth, db } from './firebase-config.js';
-    import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    // Import langsung dari CDN tanpa perantara firebase-config.js
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // Konfigurasi Duniaku
+    const firebaseConfig = {
+      apiKey: "AIzaSyAWjB5Db2FVIYlnRnd5ykVoNAfZoboCKl4",
+      authDomain: "duniaku.firebaseapp.com",
+      projectId: "duniaku",
+      storageBucket: "duniaku.firebasestorage.app",
+      messagingSenderId: "1070116102039",
+      appId: "1:1070116102039:web:2269553c0d27b2c64b6ed2"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
 
     const profileCard = document.getElementById('profile-card');
 
-    function showGuestUI() {
-      profileCard.innerHTML = `
-        <img src="https://ui-avatars.com/api/?name=Tamu&background=334155&color=fff&size=90" class="avatar">
-        <h3>Pengguna Tamu</h3>
-        <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 5px;">Kamu belum login</p>
-        <button class="btn btn-google" id="login-btn">
-          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"> Login dengan Google
-        </button>
-        <div id="error-msg"></div>
-      `;
-      
-      document.getElementById('login-btn').addEventListener('click', async () => {
-        const btn = document.getElementById('login-btn');
-        const err = document.getElementById('error-msg');
-        btn.innerText = "Memproses...";
-        err.style.display = 'none';
-        
-        try {
-          const provider = new GoogleAuthProvider();
-          await signInWithPopup(auth, provider);
-        } catch (error) {
-          btn.innerText = "Login dengan Google";
-          err.style.display = 'block';
-          err.innerText = "Gagal: " + error.message;
-        }
-      });
-    }
+    // Logika Tombol Login
+    document.getElementById('login-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('login-btn');
+      const err = document.getElementById('error-msg');
+      btn.innerText = "Memproses...";
+      err.style.display = 'none';
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (error) {
+        btn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:20px;"> Login dengan Google';
+        err.style.display = 'block';
+        err.innerText = "Gagal: " + error.message;
+      }
+    });
 
-    showGuestUI();
-
+    // Pantau Status Login
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         const userRef = doc(db, "users", user.uid);
@@ -103,9 +106,8 @@
 
         document.getElementById('logout-btn').addEventListener('click', async () => {
           await signOut(auth);
+          window.location.reload(); // Refresh untuk reset UI
         });
-      } else {
-        showGuestUI();
       }
     });
   </script>
