@@ -6,11 +6,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
-// Token dibaca dari GitHub Secrets saat Build
-const String GROQ_API_KEY = String.fromEnvironment('GROQ_API_KEY', defaultValue: '');
 const String ADMIN_EMAIL = "yadngapain@gmail.com";
+String globalGroqKey = "";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,6 +24,11 @@ void main() async {
       appId: "1:51369340219:web:5d7d22085123ca8614db1e",
     ),
   );
+  
+  // Ambil token dari memori lokal saat aplikasi dibuka
+  final prefs = await SharedPreferences.getInstance();
+  globalGroqKey = prefs.getString('groq_key') ?? '';
+
   runApp(const AdminApp());
 }
 
@@ -128,6 +133,13 @@ class DashboardScreen extends StatelessWidget {
           title: const Text('Admin Dashboard'),
           actions: [
             IconButton(
+              icon: const Icon(Icons.settings),
+              tooltip: 'Pengaturan API Key',
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
+              },
+            ),
+            IconButton(
               icon: const Icon(Icons.logout),
               onPressed: () => FirebaseAuth.instance.signOut(),
             )
@@ -157,6 +169,73 @@ class DashboardScreen extends StatelessWidget {
 }
 
 // ==========================================
+// HALAMAN SETTINGS (Input Token Groq)
+// ==========================================
+class SettingsScreen extends StatefulWidget {
+  const SettingsScreen({super.key});
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  final TextEditingController _keyCtrl = TextEditingController();
+  
+  @override
+  void initState() {
+    super.initState();
+    _keyCtrl.text = globalGroqKey;
+  }
+
+  Future<void> _save() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('groq_key', _keyCtrl.text.trim());
+    setState(() => globalGroqKey = _keyCtrl.text.trim());
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('✅ Token berhasil disimpan!')));
+      Navigator.pop(context);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Pengaturan Groq AI')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Masukkan Groq API Key (gsk_...)', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _keyCtrl,
+              obscureText: true,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: 'gsk_xxxxxxxxxxxxxxxxxxxx',
+                fillColor: Color(0xFF121a33), 
+                filled: true
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFff7a45), foregroundColor: Colors.black),
+                onPressed: _save,
+                child: const Text('Simpan Token', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ==========================================
 // TAB 1: AI GENERATOR
 // ==========================================
 class AIGeneratorTab extends StatefulWidget {
@@ -172,8 +251,8 @@ class _AIGeneratorTabState extends State<AIGeneratorTab> {
 
   Future<void> _generate() async {
     if (_promptCtrl.text.isEmpty) return;
-    if (GROQ_API_KEY.isEmpty) {
-      setState(() => _status = '❌ Error: GROQ_API_KEY tidak ditemukan. Pastikan GitHub Secrets sudah diatur.');
+    if (globalGroqKey.isEmpty) {
+      setState(() => _status = '❌ Token kosong! Buka menu Pengaturan (ikon gerigi) di kanan atas untuk memasukkan Token Groq.');
       return;
     }
 
@@ -182,7 +261,7 @@ class _AIGeneratorTabState extends State<AIGeneratorTab> {
     try {
       final res = await http.post(
         Uri.parse("https://api.groq.com/openai/v1/chat/completions"),
-        headers: {"Authorization": "Bearer $GROQ_API_KEY", "Content-Type": "application/json"},
+        headers: {"Authorization": "Bearer $globalGroqKey", "Content-Type": "application/json"},
         body: jsonEncode({
           "model": "llama3-70b-8192",
           "messages": [
