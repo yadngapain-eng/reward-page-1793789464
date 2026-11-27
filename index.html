@@ -4,20 +4,62 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DUNIAMU - Baca Novel Raih Koin</title>
-  <link rel="stylesheet" href="style.css">
-  <script data-cfasync="false" src="https://abscloud.org/1/2b27b195615029bd80cdff8d1c17e40c"></script>
-  <script data-cfasync="false" src="https://bauval.org/14/7b1c31412b8f5e830a1e189f92f840b7"></script>
+  
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+  body { background-color: #0b1120; color: #f8fafc; min-height: 100vh; display: flex; flex-direction: column; }
+  a { text-decoration: none; color: inherit; }
+  
+  /* Header & Nav */
+  header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .logo { font-size: 1.4rem; font-weight: 800; background: linear-gradient(to right, #3b82f6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .coin-badge { background: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; border: 1px solid rgba(245, 158, 11, 0.3); }
+  
+  /* Containers */
+  .container { padding: 20px; max-width: 600px; margin: 0 auto; width: 100%; flex: 1; padding-bottom: 80px; }
+  .card { background: #1e293b; border-radius: 16px; padding: 20px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05); }
+  
+  /* Buttons */
+  .btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: 700; font-size: 1rem; cursor: pointer; transition: opacity 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
+  .btn:active { opacity: 0.8; }
+  .btn-primary { background: #3b82f6; color: white; }
+  .btn-accent { background: #f59e0b; color: #000; }
+  .btn-danger { background: #ef4444; color: white; }
+  
+  /* Bottom Nav */
+  .bottom-nav { position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; background: #1e293b; padding: 12px 0 20px; border-top: 1px solid rgba(255,255,255,0.05); z-index: 100; }
+  .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; color: #94a3b8; gap: 4px; font-weight: 500; }
+  .nav-item.active { color: #3b82f6; }
+  .nav-icon { font-size: 1.2rem; }
+
+  /* Login Screen */
+  #login-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 20px; text-align: center; position: fixed; top: 0; left: 0; width: 100%; background: #0b1120; z-index: 1000; }
+  #login-screen h1 { font-size: 3rem; background: linear-gradient(to right, #3b82f6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
+  #login-screen p { color: #94a3b8; margin-bottom: 40px; font-size: 1.1rem; }
+  .btn-google { background: white; color: #1e293b; border: none; padding: 14px 24px; border-radius: 12px; font-size: 1rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; width: 100%; max-width: 300px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+  .btn-google img { width: 24px; height: 24px; }
+  
+  /* Novel Grid */
+  .novel-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .novel-card { background: #1e293b; border-radius: 12px; overflow: hidden; }
+  .novel-cover { width: 100%; aspect-ratio: 3/4; object-fit: cover; background: #334155; }
+  .novel-info { padding: 12px; }
+  .novel-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+</style>
+
 </head>
 <body>
+  <!-- LOGIN SCREEN -->
   <div id="login-screen">
     <h1>DUNIAMU</h1>
     <p>Baca Novel, Raih Koin, Tersenyum.</p>
     <button class="btn-google" id="btn-login">
       <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"> Login dengan Google
     </button>
-    <div id="error-msg"></div>
+    <div id="error-msg" style="color:#ef4444; margin-top:20px; display:none;"></div>
   </div>
 
+  <!-- APP CONTENT -->
   <div id="app-content" style="display: none;">
     <header>
       <div class="logo">DUNIAMU</div>
@@ -28,11 +70,11 @@
       <div class="novel-grid">
         <div class="novel-card" onclick="window.location.href='reader.html'">
           <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=300&auto=format&fit=crop" class="novel-cover">
-          <div class="novel-info"><div class="novel-title">Petualangan Di Jupiter</div><div style="font-size: 0.7rem; color: var(--muted);">Fantasi</div></div>
+          <div class="novel-info"><div class="novel-title">Petualangan Di Jupiter</div><div style="font-size: 0.7rem; color: #94a3b8;">Fantasi</div></div>
         </div>
         <div class="novel-card">
           <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=300&auto=format&fit=crop" class="novel-cover">
-          <div class="novel-info"><div class="novel-title">Rahasia Bintang</div><div style="font-size: 0.7rem; color: var(--muted);">Romantis</div></div>
+          <div class="novel-info"><div class="novel-title">Rahasia Bintang</div><div style="font-size: 0.7rem; color: #94a3b8;">Romantis</div></div>
         </div>
       </div>
     </div>
@@ -44,7 +86,23 @@
   </div>
 
   <script type="module">
-    import { auth, db, provider, signInWithRedirect, getRedirectResult, onAuthStateChanged, doc, getDoc, setDoc } from './firebase-config.js';
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBXqTVX1NzPYCsTc1xALLEK_MOsASJlxzI",
+      authDomain: "duniamuu.firebaseapp.com",
+      projectId: "duniamuu",
+      storageBucket: "duniamuu.firebasestorage.app",
+      messagingSenderId: "51369340219",
+      appId: "1:51369340219:android:75688118ec8626ae14db1e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
 
     const btnLogin = document.getElementById('btn-login');
     const loginScreen = document.getElementById('login-screen');
@@ -52,26 +110,22 @@
     const coinCount = document.getElementById('coin-count');
     const errorMsg = document.getElementById('error-msg');
 
-    // 1. Cek hasil redirect (jika baru kembali dari Google)
+    // Cek Redirect
     getRedirectResult(auth).then(async (result) => {
-      if (result) {
-        await checkUser(result.user);
-      }
+      if (result) await checkUser(result.user);
     }).catch((error) => {
       errorMsg.style.display = 'block';
       errorMsg.innerText = "Gagal Login: " + error.message;
-      btnLogin.innerText = "Login dengan Google";
     });
 
-    // 2. Tombol Login
+    // Klik Login
     btnLogin.addEventListener('click', async () => {
       btnLogin.innerText = "Mengalihkan...";
-      try {
-        await signInWithRedirect(auth, provider);
-      } catch (error) {
-        btnLogin.innerText = "Login dengan Google";
-        errorMsg.style.display = 'block';
-        errorMsg.innerText = "Error: " + error.message;
+      try { await signInWithRedirect(auth, provider); } 
+      catch (error) { 
+        btnLogin.innerText = "Login dengan Google"; 
+        errorMsg.style.display = 'block'; 
+        errorMsg.innerText = "Error: " + error.message; 
       }
     });
 
@@ -81,11 +135,13 @@
       if (!userSnap.exists()) {
         await setDoc(userRef, { email: user.email, coins: 100, createdAt: new Date() });
         coinCount.innerText = "100";
-      } else { coinCount.innerText = userSnap.data().coins; }
-      loginScreen.style.display = 'none'; appContent.style.display = 'block';
+      } else {
+        coinCount.innerText = userSnap.data().coins;
+      }
+      loginScreen.style.display = 'none'; 
+      appContent.style.display = 'block';
     }
 
-    // 3. Cek status login saat halaman dimuat
     onAuthStateChanged(auth, async (user) => {
       if (user) await checkUser(user);
       else { loginScreen.style.display = 'flex'; appContent.style.display = 'none'; }
