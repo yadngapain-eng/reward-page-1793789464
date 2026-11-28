@@ -56,7 +56,7 @@
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         // JIKA BELUM LOGIN: Gunakan window.location.replace agar tidak bisa di-back ke sini
-        window.location.replace("login.html");
+        window.location.href = "login.html";
       } else {
         // JIKA SUDAH LOGIN: Tampilkan data
         const userRef = doc(db, "users", user.uid);
@@ -82,7 +82,7 @@
 
         document.getElementById('logout-btn').addEventListener('click', async () => {
           await signOut(auth);
-          window.location.replace("login.html"); 
+          window.location.href = "login.html"; 
         });
       }
     });
