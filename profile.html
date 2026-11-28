@@ -52,12 +52,13 @@
     const db = getFirestore(app);
     const profileCard = document.getElementById('profile-card');
 
+    // Cek status login dengan Firebase
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        // JIKA BELUM LOGIN, PAKSA PINDAH KE HALAMAN LOGIN
-        window.location.href = "login.html";
+        // JIKA BELUM LOGIN: Gunakan window.location.replace agar tidak bisa di-back ke sini
+        window.location.replace("login.html");
       } else {
-        // JIKA SUDAH LOGIN, TAMPILKAN PROFIL
+        // JIKA SUDAH LOGIN: Tampilkan data
         const userRef = doc(db, "users", user.uid);
         const userSnap = await getDoc(userRef);
         let coinData = userSnap.exists() ? userSnap.data().coins : 100;
@@ -75,8 +76,7 @@
 
         document.getElementById('logout-btn').addEventListener('click', async () => {
           await signOut(auth);
-          // Setelah logout, paksa ke login.html
-          window.location.href = "login.html"; 
+          window.location.replace("login.html"); 
         });
       }
     });
