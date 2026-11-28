@@ -50,8 +50,17 @@
     <div class="card">
       <h2 style="margin-bottom: 20px;">Bab 1: Awal Mula</h2>
       <p style="line-height: 1.8; color: #e2e8f0;">Di suatu malam yang sunyi, langit berbintang terlihat sangat terang. Aku memandang ke arah Jupiter yang bersinar kemerahan.<br><br>Tiba-tiba, sebuah cahaya terang melesat dari arah bintang tersebut. Menembus atmosfer bumi dan jatuh tidak jauh dari rumahku.<br><br>Aku berlari ke arah jatuhnya cahaya itu. Sebuah batu meteorit bercahaya biru kini berada di depanku...</p>
-      <button class="btn btn-primary" style="margin-top: 20px;" onclick="window.location.href='index.html'">Selesai Membaca (+20 🪙)</button>
+      <button class="btn btn-primary" style="margin-top: 20px;" onclick="selesaiBaca()">Selesai Membaca (+20 🪙)</button>
     </div>
   </div>
+  <script>
+    function selesaiBaca() {
+      let coins = parseInt(localStorage.getItem("duniamu_coins") || "0");
+      coins += 20;
+      localStorage.setItem("duniamu_coins", coins);
+      alert("Hebat! Kamu mendapatkan 20 Koin.");
+      window.location.href = "index.html";
+    }
+  </script>
 </body>
 </html>

@@ -36,7 +36,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAWjB5Db2FVIYlnRnd5ykVoNAfZoboCKl4",
@@ -61,7 +61,13 @@
         // JIKA SUDAH LOGIN: Tampilkan data
         const userRef = doc(db, "users", user.uid);
         const userSnap = await getDoc(userRef);
-        let coinData = userSnap.exists() ? userSnap.data().coins : 100;
+        let coinData = 100;
+        if (userSnap.exists()) {
+          coinData = userSnap.data().coins;
+        } else {
+          // Simpan user baru ke Firestore dengan 100 koin
+          await setDoc(userRef, { email: user.email, coins: 100, createdAt: new Date() });
+        }
 
         profileCard.innerHTML = `
           <img src="${user.photoURL || 'https://ui-avatars.com/api/?name='+user.email+'&background=3b82f6&color=fff&size=90'}" class="avatar">

@@ -62,20 +62,9 @@
   </nav>
 
   
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { firebaseConfig } from './firebase-config.js';
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // Cek koin tamu dari localStorage
+  <script>
     let coins = localStorage.getItem("duniamu_coins");
-    if (coins === null) {
-      coins = 100;
-      localStorage.setItem("duniamu_coins", coins);
-    }
+    if (coins === null) { coins = 100; localStorage.setItem("duniamu_coins", coins); }
     document.getElementById("coin-count").innerText = coins;
   </script>
 

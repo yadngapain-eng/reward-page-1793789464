@@ -29,22 +29,19 @@
     <a href="profile.html" class="nav-item"><span>👤</span>Profil</a>
   </nav>
   
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { firebaseConfig } from './firebase-config.js';
+  
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // Cek koin tamu dari localStorage
-    let coins = localStorage.getItem("duniamu_coins");
-    if (coins === null) {
-      coins = 100;
-      localStorage.setItem("duniamu_coins", coins);
+  <script>
+    function klaimKoin() {
+      window.open('https://araplhn.org/4/f15341dc4ed341cc62411d69d314d518', '_blank');
+      setTimeout(() => {
+        let coins = parseInt(localStorage.getItem("duniamu_coins") || "0");
+        coins += 20;
+        localStorage.setItem("duniamu_coins", coins);
+        alert("Berhasil! +20 Koin ditambahkan.");
+        window.location.href = "index.html";
+      }, 3000);
     }
-    document.getElementById("coin-count").innerText = coins;
   </script>
-
 </body>
 </html>

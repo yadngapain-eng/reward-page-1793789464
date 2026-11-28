@@ -1,4 +1,4 @@
 /home /index.html 200
-/login /index.html 200
-/read/* /reader.html 200
-/* /index.html 404
+/login /login.html 200
+/profile /profile.html 200
+/reward /reward.html 200
