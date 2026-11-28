@@ -2,71 +2,38 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DUNIAMU - Baca Novel Raih Koin</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { background-color: #0b1120; color: #f8fafc; min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 80px; }
-    a { text-decoration: none; color: inherit; }
-    
-    /* Header */
-    header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .logo { font-size: 1.4rem; font-weight: 800; background: linear-gradient(to right, #3b82f6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .coin-badge { background: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; border: 1px solid rgba(245, 158, 11, 0.3); }
-    
-    /* Containers */
-    .container { padding: 20px; max-width: 600px; margin: 0 auto; width: 100%; flex: 1; }
-    .novel-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-    .novel-card { background: #1e293b; border-radius: 12px; overflow: hidden; }
-    .novel-cover { width: 100%; aspect-ratio: 3/4; object-fit: cover; background: #334155; }
-    .novel-info { padding: 12px; }
-    .novel-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
-    
-    /* Bottom Nav */
-    .bottom-nav { position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; background: #1e293b; padding: 12px 0 20px; border-top: 1px solid rgba(255,255,255,0.05); z-index: 100; }
-    .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; color: #94a3b8; gap: 4px; font-weight: 500; }
-    .nav-item.active { color: #3b82f6; }
-    .nav-icon { font-size: 1.2rem; }
-  </style>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DUNIAMU - Beranda</title>
+  <link rel="stylesheet" href="style.css">
+  <script data-cfasync="false" src="https://abscloud.org/1/2b27b195615029bd80cdff8d1c17e40c"></script>
 </head>
 <body>
-
   <header>
     <div class="logo">DUNIAMU</div>
-    <div class="coin-badge">🪙 <span id="coin-count">100</span></div>
+    <div class="coin-badge">🪙 <span id="coin-count">0</span></div>
   </header>
-
   <div class="container">
     <h2 style="margin-bottom: 16px; font-size: 1.3rem;">Novel Populer</h2>
     <div class="novel-grid">
       <div class="novel-card" onclick="window.location.href='reader.html'">
         <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=300&auto=format&fit=crop" class="novel-cover">
-        <div class="novel-info"><div class="novel-title">Petualangan Di Jupiter</div><div style="font-size: 0.7rem; color: #94a3b8;">Fantasi</div></div>
+        <div class="novel-info"><div class="novel-title">Petualangan Di Jupiter</div><div style="font-size: 0.7rem; color: var(--muted);">Fantasi</div></div>
       </div>
       <div class="novel-card">
         <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=300&auto=format&fit=crop" class="novel-cover">
-        <div class="novel-info"><div class="novel-title">Rahasia Bintang</div><div style="font-size: 0.7rem; color: #94a3b8;">Romantis</div></div>
-      </div>
-      <div class="novel-card">
-        <img src="https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=300&auto=format&fit=crop" class="novel-cover">
-        <div class="novel-info"><div class="novel-title">Ksatria Bayangan</div><div style="font-size: 0.7rem; color: #94a3b8;">Aksi</div></div>
+        <div class="novel-info"><div class="novel-title">Rahasia Bintang</div><div style="font-size: 0.7rem; color: var(--muted);">Romantis</div></div>
       </div>
     </div>
   </div>
-
   <nav class="bottom-nav">
     <a href="index.html" class="nav-item active"><span class="nav-icon">🏠</span>Beranda</a>
     <a href="reward.html" class="nav-item"><span class="nav-icon">🎁</span>Reward</a>
     <a href="profile.html" class="nav-item"><span class="nav-icon">👤</span>Profil</a>
   </nav>
-
-  
   <script>
-    let coins = localStorage.getItem("duniamu_coins");
-    if (coins === null) { coins = 100; localStorage.setItem("duniamu_coins", coins); }
+    let coins = parseInt(localStorage.getItem("duniamu_coins")) || 100;
+    localStorage.setItem("duniamu_coins", coins);
     document.getElementById("coin-count").innerText = coins;
   </script>
-
 </body>
 </html>

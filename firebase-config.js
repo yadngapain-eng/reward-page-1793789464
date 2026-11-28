@@ -14,9 +14,8 @@ const firebaseConfig = {
   measurementId: "G-47FGDHJVL5"
 };
 
-// Inisialisasi Firebase di sini agar bisa di-export
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-export { app, auth, db, firebaseConfig };
+export { app, auth, db };

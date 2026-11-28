@@ -1,41 +1,30 @@
 
 <!DOCTYPE html>
 <html lang="id">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Reward - DUNIAMU</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-  body { background: #0b1120; color: #f8fafc; padding-bottom: 80px; }
-  header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: #1e293b; }
-  .container { padding: 20px; max-width: 600px; margin: 0 auto; }
-  .card { background: #1e293b; border-radius: 16px; padding: 20px; margin-bottom: 16px; text-align: center; }
-  .btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: 700; font-size: 1rem; cursor: pointer; background: #f59e0b; color: #000; }
-  .bottom-nav { position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; background: #1e293b; padding: 12px 0 20px; border-top: 1px solid rgba(255,255,255,0.05); }
-  .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; color: #94a3b8; text-decoration: none; gap: 4px; }
-  .nav-item.active { color: #3b82f6; }
-</style>
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reward - DUNIAMU</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header><a href="index.html" style="color:white; text-decoration:none; font-size:1.5rem;">←</a><div style="font-weight:bold;">Reward</div><div style="width:24px;"></div></header>
+  <header><a href="index.html" style="font-size:1.5rem;">←</a><div class="logo">Reward</div><div style="width:24px;"></div></header>
   <div class="container">
-    <div class="card">
+    <div class="card" style="text-align:center;">
       <h3>Klaim Koin Gratis</h3>
-      <p style="color: #94a3b8; margin: 10px 0;">Tonton iklan singkat untuk mendapatkan 20 Koin.</p>
-      <button class="btn" onclick="klaimKoin()">Tonton Iklan (+20 🪙)</button>
+      <p style="color: var(--muted); margin: 10px 0;">Tonton iklan singkat untuk mendapatkan 20 Koin.</p>
+      <button class="btn btn-accent" onclick="klaimKoin()">Tonton Iklan (+20 🪙)</button>
     </div>
   </div>
   <nav class="bottom-nav">
-    <a href="index.html" class="nav-item"><span>🏠</span>Beranda</a>
-    <a href="reward.html" class="nav-item active"><span>🎁</span>Reward</a>
-    <a href="profile.html" class="nav-item"><span>👤</span>Profil</a>
+    <a href="index.html" class="nav-item"><span class="nav-icon">🏠</span>Beranda</a>
+    <a href="reward.html" class="nav-item active"><span class="nav-icon">🎁</span>Reward</a>
+    <a href="profile.html" class="nav-item"><span class="nav-icon">👤</span>Profil</a>
   </nav>
-  
-  
-
   <script>
     function klaimKoin() {
       window.open('https://araplhn.org/4/f15341dc4ed341cc62411d69d314d518', '_blank');
       setTimeout(() => {
-        let coins = parseInt(localStorage.getItem("duniamu_coins") || "0");
+        let coins = parseInt(localStorage.getItem("duniamu_coins")) || 0;
         coins += 20;
         localStorage.setItem("duniamu_coins", coins);
         alert("Berhasil! +20 Koin ditambahkan.");

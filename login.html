@@ -2,130 +2,58 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - DUNIAMU</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    body { background-color: #ffffff; color: #1e293b; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
-    
-    .logo-container { margin-bottom: 40px; text-align: center; }
-    .logo-container h1 { font-size: 2rem; color: #2563eb; font-weight: 800; letter-spacing: -1px; }
-    
-    .form-group { width: 100%; max-width: 350px; margin-bottom: 15px; position: relative; }
-    .form-group input { width: 100%; padding: 16px 20px; border-radius: 12px; border: 1px solid #e2e8f0; background-color: #f8fafc; font-size: 1rem; color: #1e293b; outline: none; transition: border 0.2s; }
-    .form-group input:focus { border-color: #2563eb; background-color: #ffffff; }
-    
-    .password-toggle { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #94a3b8; font-size: 1.2rem; }
-    
-    .terms { width: 100%; max-width: 350px; font-size: 0.8rem; color: #64748b; margin-bottom: 20px; line-height: 1.5; }
-    .terms a { color: #1e293b; font-weight: 600; text-decoration: underline; }
-    
-    .forgot-register { width: 100%; max-width: 350px; display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 20px; }
-    .forgot-register a { color: #2563eb; text-decoration: none; font-weight: 600; }
-    
-    .btn-login { width: 100%; max-width: 350px; padding: 16px; border-radius: 12px; border: none; background-color: #2563eb; color: white; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-    .btn-login:active { background-color: #1d4ed8; }
-    
-    .divider { display: flex; align-items: center; width: 100%; max-width: 350px; margin: 25px 0; }
-    .divider::before, .divider::after { content: ""; flex: 1; border-bottom: 1px solid #e2e8f0; }
-    
-    .social-login { display: flex; gap: 10px; width: 100%; max-width: 350px; justify-content: center; }
-    .btn-social { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0; background: white; display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 600; color: #475569; cursor: pointer; }
-    .btn-social img { width: 18px; height: 18px; }
-    
-    #error-msg { color: #ef4444; font-size: 0.9rem; margin-top: 15px; text-align: center; display: none; max-width: 350px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+    body { background: #ffffff; color: #1e293b; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+    .logo { font-size: 2rem; color: #2563eb; font-weight: 800; margin-bottom: 40px; }
+    .input-group { width: 100%; max-width: 350px; margin-bottom: 15px; }
+    .input-group input { width: 100%; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; font-size: 1rem; outline: none; }
+    .input-group input:focus { border-color: #2563eb; }
+    .btn-login { width: 100%; max-width: 350px; padding: 16px; border-radius: 12px; border: none; background: #2563eb; color: white; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 10px; }
+    .btn-google { width: 100%; max-width: 350px; padding: 14px; border-radius: 12px; border: 1px solid #e2e8f0; background: white; display: flex; justify-content: center; align-items: center; gap: 10px; font-weight: 600; color: #475569; cursor: pointer; margin-top: 15px; }
+    .btn-google img { width: 20px; height: 20px; }
+    #error-msg { color: #ef4444; font-size: 0.9rem; margin-top: 15px; display: none; text-align: center; }
   </style>
 </head>
 <body>
-
-  <div class="logo-container">
-    <h1>DUNIAMU</h1>
-  </div>
-
-  <div class="form-group">
-    <input type="email" id="email" placeholder="Nomor telepon / alamat email" required>
-  </div>
-
-  <div class="form-group">
-    <input type="password" id="password" placeholder="Kata sandi" required>
-    <button class="password-toggle" onclick="togglePassword()">👁️</button>
-  </div>
-
-  <div class="terms">
-    Dengan mendaftar atau login, Anda menyetujui <a href="#">Syarat Penggunaan</a> dan <a href="#">Kebijakan Privasi</a> DUNIAMU.
-  </div>
-
-  <div class="forgot-register">
-    <a href="#">Lupa kata sandi?</a>
-    <a href="#">Daftar</a>
-  </div>
-
-  <button class="btn-login" id="btn-email-login">Masuk</button>
-
-  <div class="divider"></div>
-
-  <div class="social-login">
-    <button class="btn-social" id="btn-google-login">
-      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"> Login dengan Google
-    </button>
-  </div>
-
+  <div class="logo">DUNIAMU</div>
+  <div class="input-group"><input type="email" id="email" placeholder="Email"></div>
+  <div class="input-group"><input type="password" id="password" placeholder="Kata Sandi"></div>
+  <button class="btn-login" id="btn-email">Masuk</button>
+  <div style="margin: 20px 0; color: #94a3b8;">Atau</div>
+  <button class="btn-google" id="btn-google">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"> Login dengan Google
+  </button>
   <div id="error-msg"></div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-    // Konfigurasi Duniaku
-    const firebaseConfig = {
-      apiKey: "AIzaSyAWjB5Db2FVIYlnRnd5ykVoNAfZoboCKl4",
-      authDomain: "duniaku.firebaseapp.com",
-      projectId: "duniaku",
-      storageBucket: "duniaku.firebasestorage.app",
-      messagingSenderId: "1070116102039",
-      appId: "1:1070116102039:web:2269553c0d27b2c64b6ed2"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+    import { auth } from './firebase-config.js';
+    import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const errorMsg = document.getElementById('error-msg');
 
-    function showError(msg) {
-      errorMsg.style.display = 'block';
-      errorMsg.innerText = msg;
-    }
-
-    // Toggle Password Visibility
-    window.togglePassword = function() {
-      const pwd = document.getElementById('password');
-      if (pwd.type === 'password') { pwd.type = 'text'; }
-      else { pwd.type = 'password'; }
-    }
-
-    // Login Email/Password
-    document.getElementById('btn-email-login').addEventListener('click', async () => {
+    document.getElementById('btn-email').addEventListener('click', async () => {
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
-      if (!email || !password) { showError("Harap isi email dan sandi."); return; }
-      
       try {
         await signInWithEmailAndPassword(auth, email, password);
         window.location.href = "profile.html";
-      } catch (error) {
-        showError("Gagal: Email atau Sandi salah.");
+      } catch (e) {
+        errorMsg.style.display = 'block';
+        errorMsg.innerText = "Email atau sandi salah.";
       }
     });
 
-    // Login Google
-    document.getElementById('btn-google-login').addEventListener('click', async () => {
+    document.getElementById('btn-google').addEventListener('click', async () => {
       try {
         const provider = new GoogleAuthProvider();
         await signInWithPopup(auth, provider);
         window.location.href = "profile.html";
-      } catch (error) {
-        showError("Gagal: " + error.message);
+      } catch (e) {
+        errorMsg.style.display = 'block';
+        errorMsg.innerText = "Gagal login: " + e.message;
       }
     });
   </script>
